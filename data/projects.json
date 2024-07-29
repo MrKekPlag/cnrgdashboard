@@ -1,0 +1,52 @@
+[
+  {
+    "id": "432433222",
+    "name": "32222222412",
+    "comments": "kommentaryy",
+    "deadline": "2024-07-26",
+    "weight": "10",
+    "employees": [
+      "Nurdaulet Zhumabekov"
+    ],
+    "products": [
+      {
+        "name": "",
+        "cost": ""
+      }
+    ],
+    "status": "Запрос",
+    "rating": "6",
+    "customerRating": "1",
+    "goals": [
+      {
+        "name": "goall2",
+        "deadline": "2024-07-26",
+        "status": "В пути",
+        "customerRating": "6"
+      }
+    ],
+    "dependencies": [
+      "343212428"
+    ],
+    "finalCompletionDate": ""
+  },
+  {
+    "name": "32к3йцу",
+    "id": "343212428",
+    "employees": [
+      "Nurdaulet Zhumabekov"
+    ],
+    "goals": [
+      {
+        "goal": "цйукй",
+        "deadline": "2024-07-24"
+      }
+    ],
+    "dependencies": [
+      "432433222"
+    ],
+    "rating": 0,
+    "customerRating": "Нет",
+    "deadline": "2024-07-24"
+  }
+]

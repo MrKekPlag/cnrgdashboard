@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-Панель</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        .logo img {
+            width: 150px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            margin-top: 100px;
+        }
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #fff;
+            font-size: 16px;
+        }
+        .primary-btn {
+            background-color: #007bff;
+        }
+        .primary-btn:hover {
+            background-color: #0056b3;
+        }
+        .danger-btn {
+            background-color: #dc3545;
+        }
+        .danger-btn:hover {
+            background-color: #c82333;
+        }
+        .status-btn {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .status-btn:hover {
+            background-color: #006bff;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+        .modal h2 {
+            margin-top: 0;
+        }
+        .modal input, .modal select {
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+        }
+        .modal button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .color-input {
+            padding: 0;
+            height: 40px;
+            background: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <a href="projects.html"><img src="cnrg.png" alt="C-NRG Logo"></a>
+    </div>
+    <div class="container">
+        <button class="primary-btn" onclick="window.location.href='register_user.html'">Зарегистрировать пользователя</button>
+        <button class="danger-btn" onclick="window.location.href='delete_user.html'">Удалить пользователя</button>
+        <button class="status-btn" onclick="showStatusModal('create')">Создать новый статус</button>
+        <button class="status-btn" onclick="showStatusModal('edit')">Редактировать статус</button>
+        <button class="danger-btn" onclick="showStatusModal('delete')">Удалить статус</button>
+        <button class="primary-btn" onclick="showManageProjectsModal()">Управление процессами сотрудников</button>
+    </div>
+
+    <div id="status-modal" class="modal">
+        <h2 id="status-modal-title"></h2>
+        <select id="status-select" style="display: none;" onchange="updateStatusColor()"></select>
+        <input type="text" id="status-input" placeholder="Название статуса">
+        <input type="text" id="rename-input" placeholder="Новое название статуса" style="display: none;">
+        <label for="status-color" id="status-color-label" style="display: none;">Выберите цвет:</label>
+        <input type="color" id="status-color" class="color-input">
+        <button class="primary-btn" id="status-save-btn" onclick="saveStatus()">Сохранить</button>
+        <button class="danger-btn" onclick="closeStatusModal()">Закрыть</button>
+    </div>
+
+    <div id="manage-projects-modal" class="modal">
+        <h2>Управление процессами сотрудников</h2>
+        <select id="project-select"></select>
+        <select id="employee-select"></select>
+        <button class="primary-btn" onclick="transferProject()">Передать процесс сотруднику</button>
+        <button class="primary-btn" onclick="addEmployee()">Добавить сотрудника к процессу</button>
+        <button class="danger-btn" onclick="removeEmployee()">Удалить сотрудника из процесса</button>
+        <button class="danger-btn" onclick="closeManageProjectsModal()">Закрыть</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadStatuses();
+            loadProjects();
+            loadEmployees();
+        });
+
+        async function loadStatuses() {
+            try {
+                const response = await fetch('/statuses.json', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Ошибка при загрузке статусов');
+                }
+                const statuses = await response.json();
+                const statusSelect = document.getElementById('status-select');
+                statusSelect.innerHTML = '';
+                statuses.forEach(status => {
+                    statusSelect.innerHTML += `<option value="${status.name}" data-color="${status.color}">${status.name}</option>`;
+                });
+            } catch (error) {
+                console.error('Ошибка при загрузке статусов:', error);
+                alert('Ошибка при загрузке статусов');
+            }
+        }
+
+        function showStatusModal(action) {
+            document.getElementById('status-modal-title').textContent = {
+                'create': 'Создать новый статус',
+                'edit': 'Редактировать статус',
+                'delete': 'Удалить статус'
+            }[action];
+            document.getElementById('status-save-btn').onclick = () => saveStatus(action);
+            document.getElementById('status-input').style.display = action === 'create' ? 'block' : 'none';
+            document.getElementById('rename-input').style.display = action === 'edit' ? 'block' : 'none';
+            document.getElementById('status-color-label').style.display = action !== 'delete' ? 'block' : 'none';
+            document.getElementById('status-color').style.display = action !== 'delete' ? 'block' : 'none';
+            document.getElementById('status-select').style.display = action !== 'create' ? 'block' : 'none';
+            document.getElementById('status-modal').style.display = 'block';
+        }
+
+        function closeStatusModal() {
+            document.getElementById('status-modal').style.display = 'none';
+        }
+
+        function updateStatusColor() {
+            const statusSelect = document.getElementById('status-select');
+            const selectedOption = statusSelect.options[statusSelect.selectedIndex];
+            const statusColor = selectedOption.getAttribute('data-color');
+            document.getElementById('status-color').value = statusColor;
+        }
+
+        async function saveStatus(statusAction) {
+            let statuses = [
+                { name: 'Запрос', color: '#007bff' },
+                { name: 'Ожидание согласования договора', color: '#ffc107' },
+                { name: 'Ожидание Оплаты', color: '#17a2b8' },
+                { name: 'В пути', color: '#28a745' },
+                { name: 'Выполнено', color: '#6c757d' },
+                { name: 'Отклонено', color: '#dc3545' }
+            ];
+            const statusInput = document.getElementById('status-input').value.trim();
+            const statusSelect = document.getElementById('status-select').value;
+            const renameInput = document.getElementById('rename-input').value.trim();
+            const statusColor = document.getElementById('status-color').value;
+
+            if (statusAction === 'create') {
+                if (statusInput && !statuses.find(status => status.name === statusInput)) {
+                    statuses.push({ name: statusInput, color: statusColor });
+                }
+            } else if (statusAction === 'edit') {
+                const index = statuses.findIndex(status => status.name === statusSelect);
+                if (index !== -1) {
+                    statuses[index].name = renameInput || statuses[index].name;
+                    statuses[index].color = statusColor;
+                    console.log('Updated status:', statuses[index]);
+                }
+            } else if (statusAction === 'delete') {
+                const index = statuses.findIndex(status => status.name === statusSelect);
+                if (index !== -1) {
+                    const deletedStatusName = statuses[index].name;
+                    statuses.splice(index, 1);
+                    console.log('Deleted status:', statusSelect);
+
+                    const response = await fetch(`http://localhost:3000/projects`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                    const projects = await response.json();
+
+                    projects.forEach(project => {
+                        project.goals.forEach(goal => {
+                            if (goal.status === deletedStatusName) {
+                                goal.status = 'Запрос';
+                            }
+                        });
+                    });
+
+                    await fetch('http://localhost:3000/projects', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify(projects)
+                    });
+                }
+            }
+
+            const response = await fetch('http://localhost:3000/statuses', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(statuses)
+            });
+
+            if (response.ok) {
+                localStorage.setItem('statuses', JSON.stringify(statuses));
+                loadStatuses();
+                closeStatusModal();
+                alert('Статус успешно обновлен!');
+            } else {
+                console.error('Ошибка при сохранении статусов');
+            }
+        }
+
+        function showManageProjectsModal() {
+            document.getElementById('manage-projects-modal').style.display = 'block';
+        }
+
+        function closeManageProjectsModal() {
+            document.getElementById('manage-projects-modal').style.display = 'none';
+        }
+
+        function loadProjects() {
+            fetch('http://localhost:3000/projects/all', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(allProjects => {
+                const projectSelect = document.getElementById('project-select');
+                projectSelect.innerHTML = '';
+                allProjects.forEach(project => {
+                    projectSelect.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+                });
+            })
+            .catch(error => console.error('Ошибка при загрузке проектов:', error));
+        }
+
+        function loadEmployees() {
+            fetch('http://localhost:3000/auth/users', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(users => {
+                const employeeSelect = document.getElementById('employee-select');
+                employeeSelect.innerHTML = '';
+                users.forEach(user => {
+                    employeeSelect.innerHTML += `<option value="${user.firstName} ${user.lastName}">${user.firstName} ${user.lastName}</option>`;
+                });
+            })
+            .catch(error => console.error('Ошибка при получении пользователей:', error));
+        }
+
+        function transferProject() {
+            const projectId = document.getElementById('project-select').value;
+            const newEmployee = document.getElementById('employee-select').value;
+            fetch(`http://localhost:3000/projects/${projectId}/transfer`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ newEmployee })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Процесс успешно передан новому сотруднику');
+                } else {
+                    throw new Error('Ошибка при передаче процесса');
+                }
+            })
+            .catch(error => console.error('Ошибка при передаче процесса:', error));
+        }
+
+        function addEmployee() {
+            const projectId = document.getElementById('project-select').value;
+            const newEmployee = document.getElementById('employee-select').value;
+            fetch(`http://localhost:3000/projects/${projectId}/add-employee`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ newEmployee })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Сотрудник успешно добавлен к процессу');
+                } else {
+                    throw new Error('Ошибка при добавлении сотрудника');
+                }
+            })
+            .catch(error => console.error('Ошибка при добавлении сотрудника:', error));
+        }
+
+        function removeEmployee() {
+            const projectId = document.getElementById('project-select').value;
+            const employeeToRemove = document.getElementById('employee-select').value;
+            fetch(`http://localhost:3000/projects/${projectId}/remove-employee`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ employeeToRemove })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Сотрудник успешно удален из процесса');
+                } else {
+                    throw new Error('Ошибка при удалении сотрудника');
+                }
+            })
+            .catch(error => console.error('Ошибка при удалении сотрудника:', error));
+        }
+    </script>
+</body>
+</html>

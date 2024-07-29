@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete User</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        .form-container h1 {
+            margin-bottom: 20px;
+        }
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #dc3545;
+            color: #fff;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #c82333;
+        }
+        .logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+  <a href="projects.html" class="logo"><img src="cnrg.png" alt="C-NRG Logo" width="150px"></a>
+    <div class="form-container">
+        <h1>Delete User</h1>
+        <input type="text" id="username" placeholder="Username">
+        <button onclick="deleteUser()">Delete User</button>
+    </div>
+    <script>
+        async function deleteUser() {
+            const username = document.getElementById('username').value;
+
+            try {
+                const response = await fetch('http://localhost:3000/auth/delete', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ username })
+                });
+
+                if (response.ok) {
+                    alert('User deleted successfully');
+                    // Optionally, remove user from localStorage if necessary
+                    const currentUser = localStorage.getItem('username');
+                    if (currentUser === username) {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('role');
+                        localStorage.removeItem('username');
+                        localStorage.removeItem('firstName');
+                        localStorage.removeItem('lastName');
+                    }
+                    window.location.href = 'projects.html';
+                } else {
+                    throw new Error('User deletion failed');
+                }
+            } catch (error) {
+                alert('Error deleting user: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

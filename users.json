@@ -1,0 +1,66 @@
+[
+  {
+    "id": 4,
+    "firstName": "Nurdaulet",
+    "lastName": "Zhumabekov",
+    "username": "zhumabekov.nurdaulet",
+    "password": "$2b$10$vFFoCgws5gh8dXpK1Sq58uqGA2mp4DcySfoG.M5ZCs2ZSv/euVvEa",
+    "role": "admin"
+  },
+  {
+    "id": 2,
+    "firstName": "Denis",
+    "lastName": "Denis",
+    "username": "denis",
+    "password": "$2b$10$x7oS9RU/fmK1CJ.Rbi5SU.xJvDApk2Tb5zRfe7mAF6A6aCFgDq/xW",
+    "role": "admin"
+  },
+  {
+    "id": 3,
+    "firstName": "Employee",
+    "lastName": "Zhumabekov",
+    "username": "1234",
+    "password": "$2b$10$aaqRdcid/lbHELjhULlxQ.BboCTCEUX6UM3e0LRafoCKKbSzKpVgq",
+    "role": "user"
+  },
+  {
+    "id": 4,
+    "firstName": "Askar",
+    "lastName": "Askar",
+    "username": "askar",
+    "password": "$2b$10$m539DhvgDSf1AS0EENi3p.JTL6a0o.MDf56C1qK3HpgBNjfbzj1Pm",
+    "role": "admin"
+  },
+  {
+    "id": 5,
+    "firstName": "Юля",
+    "lastName": "Берникова",
+    "username": "yulya.bernikova",
+    "password": "$2b$10$sLa23lHjaAV8/nQfk/XfF.FdnAnWbgOxPf3LbmStTYo/9H71sn/T6",
+    "role": "user"
+  },
+  {
+    "id": 6,
+    "firstName": "Employee 5",
+    "lastName": "Pak",
+    "username": "manager",
+    "password": "$2b$10$Kj2VCGhRKqWO8741G9xr6.096M/HZF1TBmVrm9TtDTeF0WKRSRM0q",
+    "role": "user"
+  },
+  {
+    "id": 7,
+    "firstName": "Юрий",
+    "lastName": "Тюленев",
+    "username": "ЮРИТ",
+    "password": "$2b$10$uoKGtInoRRLeWac64ToGfe2b1JrND3AJEeAUpVA/K0088gAkq3BLS",
+    "role": "user"
+  },
+  {
+    "id": 8,
+    "firstName": "Анатолий ",
+    "lastName": "Куликов",
+    "username": "",
+    "password": "$2b$10$9fIj7zNw6rpQibXs15xgguKaVHa7etksX1uTcFxpCRm/ai.CVK28q",
+    "role": "user"
+  }
+]

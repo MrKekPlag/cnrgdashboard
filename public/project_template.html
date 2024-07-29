@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project: {{projectName}}</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #fff;
+        }
+        .status.request {
+            background-color: #007bff;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .product-service-list {
+            list-style: none;
+            padding: 0;
+        }
+        .product-service-list li {
+            padding: 10px;
+            background-color: #444;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .total-cost {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{projectName}}</h1>
+            <span class="status {{projectStatusClass}}">{{projectStatus}}</span>
+        </div>
+        <div class="form-group">
+            <label for="projectComments">Comments</label>
+            <input type="text" id="projectComments" value="{{projectComments}}" readonly>
+        </div>
+        <div class="form-group">
+            <label>Products/Services</label>
+            <ul class="product-service-list">
+                {{#each projectProductService}}
+                <li>{{this.name}} - {{this.cost}}₸</li>
+                {{/each}}
+            </ul>
+            <div class="total-cost">Total Cost: {{projectTotalCost}}₸</div>
+        </div>
+        <div class="form-group">
+            <label for="projectWeight">Weight</label>
+            <input type="text" id="projectWeight" value="{{projectWeight}}" readonly>
+        </div>
+        <div class="form-group">
+            <label for="projectEmployee">Employee</label>
+            <input type="text" id="projectEmployee" value="{{projectEmployee}}" readonly>
+        </div>
+        <div class="form-group">
+            <label for="projectSupplier">Supplier</label>
+            <input type="text" id="projectSupplier" value="{{projectSupplier}}" readonly>
+        </div>
+        <div class="form-group">
+            <label for="projectDeadline">Deadline</label>
+            <input type="text" id="projectDeadline" value="{{projectDeadline}}" readonly>
+        </div>
+    </div>
+</body>
+</html>

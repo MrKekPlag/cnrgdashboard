@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Процесс</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .edit-btn img,
+        .approve-btn img {
+            width: 25px;
+            height: 25px;
+        }
+        .edit-btn,
+        .approve-btn {
+            background-color: #007bff;
+            border: none;
+            padding: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #fff;
+            display: none; /* Hide the status text */
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .goal-list {
+            display: flex;
+            flex-direction: column;
+        }
+        .goal-list li {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #444;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .goal-list li span {
+            flex: 1;
+        }
+        .goal-list li select,
+        .goal-list li input {
+            margin-right: 10px;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .goal-list li button {
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .goal-list li .edit-btn,
+        .goal-list li .delete-btn,
+        .goal-list li .approve-btn {
+            background-color: #007bff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+        .goal-list li .delete-btn {
+            background-color: #dc3545;
+        }
+        .goal-list li .edit-btn img,
+        .goal-list li .delete-btn img,
+        .goal-list li .approve-btn img {
+            width: 20px;
+            height: 20px;
+        }
+        .add-goal-btn-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .add-goal-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #007bff;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .add-goal-btn img {
+            width: 20px;
+            height: 20px;
+        }
+        .total-cost {
+            font-weight: bold;
+        }
+        .logo img {
+            width: 150px;
+        }
+        .logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        #edit-project-name {
+            width: calc(100% - 70px); /* Adjust width to fit the buttons */
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .primary-btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+        }
+        .primary-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+  <div class="logo">
+    <a href="projects.html" class="logo"><img src="cnrg.png" alt="C-NRG Logo"></a>
+  </div>
+    <div class="container" id="project-container"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadProject);
+
+        function loadProject() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('id');
+            let projects = JSON.parse(localStorage.getItem('projects')) || [];
+            const project = projects.find(p => p.id === projectId);
+
+            if (project) {
+                const container = document.getElementById('project-container');
+                container.innerHTML = `
+                    <div class="header">
+                        <h1 id="project-name">${project.name}</h1>
+                        <input type="text" id="edit-project-name" value="${project.name}" style="display: none;">
+                        <button class="edit-btn" id="edit-project-name-btn" onclick="enableProjectEdit()"><img src="edit.png" alt="Edit"></button>
+                        <button class="approve-btn" id="approve-project-name-btn" style="display: none;" onclick="confirmProjectEdit()"><img src="approve.png" alt="Approve"></button>
+                        <span class="status ${project.status.toLowerCase().replace(' ', '-')}">${project.status}</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectComments">Комментарии</label>
+                        <input type="text" id="projectComments" value="${project.comments}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectGoals">Цели</label>
+                        <div class="goal-list">
+                            <ul>
+                                ${project.goals.map(goal => `
+                                    <li>
+                                        <input type="text" value="${goal.name}" readonly id="goal-name-${goal.name}" onchange="updateGoalName('${project.id}', '${goal.name}', this.value)">
+                                        <select class="status-select" id="status-select-${goal.name}" onchange="updateGoalStatus('${project.id}', '${goal.name}', this.value)">
+                                            <option value="Запрос" ${goal.status === 'Запрос' ? 'selected' : ''}>Запрос</option>
+                                            <option value="Ожидает согласование договора" ${goal.status === 'Ожидает согласование договора' ? 'selected' : ''}>Ожидает согласование договора</option>
+                                            <option value="Ожидает Оплаты" ${goal.status === 'Ожидает Оплаты' ? 'selected' : ''}>Ожидает Оплаты</option>
+                                            <option value="В пути" ${goal.status === 'В пути' ? 'selected' : ''}>В пути</option>
+                                            <option value="Выполнено" ${goal.status === 'Выполнено' ? 'selected' : ''}>Выполнено</option>
+                                            <option value="Отклонено" ${goal.status === 'Отклонено' ? 'selected' : ''}>Отклонено</option>
+                                        </select>
+                                        <input type="date" value="${goal.deadline}" readonly id="goal-deadline-${goal.name}" onchange="updateGoalDeadline('${project.id}', '${goal.name}', this.value)">
+                                        <select class="rating" onchange="updateGoalRating('${project.id}', '${goal.name}', this.value)">
+                                            ${Array.from({ length: +project.weight + 1 }, (_, i) => `<option value="${i}" ${i == goal.rating ? 'selected' : ''}>${i}</option>`).join('')}
+                                        </select>
+                                        <span>${goal.rating}/${project.weight}</span>
+                                        <button class="edit-btn" onclick="enableGoalEdit('${project.id}', '${goal.name}')"><img src="edit.png" alt="Edit"></button>
+                                        <button class="approve-btn" style="display:none;" onclick="confirmGoalEdit('${project.id}', '${goal.name}')"><img src="approve.png" alt="Approve"></button>
+                                        <button class="delete-btn" onclick="deleteGoal('${project.id}', '${goal.name}')"><img src="delete.png" alt="Delete"></button>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                            <div class="add-goal-btn-container">
+                                <button class="add-goal-btn" onclick="addGoal('${project.id}')"><img src="add.png" alt="Add"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Товары/Услуги</label>
+                        <ul class="product-service-list">
+                            ${project.products.map(p => `<li>${p.name} - ${p.cost}₸</li>`).join('')}
+                        </ul>
+                        <div class="total-cost">Итоговая стоимость: ${project.products.reduce((sum, p) => sum + parseFloat(p.cost), 0)}₸</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectWeight">Вес</label>
+                        <input type="text" id="projectWeight" value="${project.weight}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectEmployees">Сотрудники</label>
+                        ${project.employees.map(employee => `<input type="text" value="${employee}" readonly>`).join('')}
+                    </div>
+                    <div class="form-group">
+                        <label for="projectDeadline">Срок выполнения</label>
+                        <input type="text" id="projectDeadline" value="${project.deadline}" readonly>
+                    </div>
+                    <button onclick="window.location.href='projects.html'" class="primary-btn">На главную страницу</button>
+                `;
+                updateStatusOptions(); // Call to update status options
+                applyStoredStatuses(projectId); // Apply stored statuses
+            }
+        }
+
+        function updateStatusOptions() {
+            const statusSelects = document.querySelectorAll('.status-select');
+            const statuses = JSON.parse(localStorage.getItem('statuses')) || [
+                { name: 'Запрос', color: '#007bff' },
+                { name: 'Ожидание согласования договора', color: '#ffc107' },
+                { name: 'Ожидание Оплаты', color: '#17a2b8' },
+                { name: 'В пути', color: '#28a745' },
+                { name: 'Выполнено', color: '#6c757d' },
+                { name: 'Отклонено', color: '#dc3545' }
+            ];
+
+            statusSelects.forEach(select => {
+                const currentStatus = select.value;
+                select.innerHTML = ''; // Clear existing options
+                statuses.forEach(status => {
+                    const option = document.createElement('option');
+                    option.value = status.name;
+                    option.textContent = status.name;
+                    select.appendChild(option);
+                });
+                select.value = currentStatus; // Re-assign the current value to maintain selection
+            });
+        }
+
+        function applyStoredStatuses(projectId) {
+            const projectStatus = localStorage.getItem(`status-id-${projectId}`);
+            if (projectStatus) {
+                document.querySelector('.status').textContent = projectStatus;
+                document.querySelector('.status').className = `status ${projectStatus.toLowerCase().replace(' ', '-')}`;
+            }
+
+            let projects = JSON.parse(localStorage.getItem('projects')) || [];
+            const project = projects.find(p => p.id === projectId);
+            if (project) {
+                project.goals.forEach(goal => {
+                    const storedStatus = localStorage.getItem(`status-${projectId}-${goal.name}`);
+                    if (storedStatus) {
+                        document.getElementById(`status-select-${goal.name}`).value = storedStatus;
+                    }
+                });
+            }
+        }
+
+        function enableProjectEdit() {
+            const projectName = document.getElementById('project-name');
+            const editProjectName = document.getElementById('edit-project-name');
+            const editButton = document.getElementById('edit-project-name-btn');
+            const approveButton = document.getElementById('approve-project-name-btn');
+            projectName.style.display = 'none';
+            editProjectName.style.display = 'block';
+            editButton.style.display = 'none';
+            approveButton.style.display = 'block';
+            editProjectName.focus();
+        }
+
+        function confirmProjectEdit() {
+            const editProjectName = document.getElementById('edit-project-name');
+            updateProjectName(editProjectName.value);
+            const editButton = document.getElementById('edit-project-name-btn');
+            const approveButton = document.getElementById('approve-project-name-btn');
+            editButton.style.display = 'block';
+            approveButton.style.display = 'none';
+        }
+
+        function updateProjectName(newName) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('id');
+            let projects = JSON.parse(localStorage.getItem('projects')) || [];
+            projects = projects.map(project => {
+                if (project.id === projectId) {
+                    project.name = newName;
+                }
+                return project;
+            });
+            localStorage.setItem('projects', JSON.stringify(projects));
+            document.getElementById('project-name').textContent = newName;
+            document.getElementById('project-name').style.display = 'block';
+            document.getElementById('edit-project-name').style.display = 'none';
+        }
+
+        function togglePenaltyField(value) {
+            document.getElementById('penaltyPercentField').style.display = value.toLowerCase() === 'да' ? 'block' : 'none';
+        }
+
+        function updateProjectStatus(projectId, status) {
+            let projects = JSON.parse(localStorage.getItem('projects')) || [];
+            console.log(`Updating project status for project ${projectId} to ${status}`);
+            projects = projects.map(project => {
+                if (project.id === projectId) {
+                    project.status = status;
+                }
+                return project;
+            });
+            localStorage.setItem('projects', JSON.stringify(projects));
+            localStorage.setItem(`status-id-${projectId}`, status); // Update specific status-id in localStorage
+            console.log('Updated projects:', projects);
+            loadProject();
+        }
+
+        function updateGoalStatus(projectId, goalName, status) {
+            let projects = JSON.parse(localStorage.getItem('projects')) || [];
+            console.log(`Updating status for goal ${goalName} in project ${projectId} to ${status}`);
+            projects = projects.map(project => {
+                if (project.id === projectId) {
+                    project.goals = project.goals.map(goal => {
+                        if (goal.name === goalName) {
+                            goal.status = status;
+                        }
+                        return goal;
+                    });
+                }
+                return project;
+            });
+            localStorage.setItem('projects', JSON.stringify(projects));
+            localStorage.setItem(`status-${projectId}-${goalName}`, status); // Save goal status to localStorage
+            console.log('Updated projects:', projects);
+            updateGoalStatusInDOM(projectId, goalName, status); // Update DOM
+        }
+
+        function updateGoalStatusInDOM(projectId, goalName, status) {
+            const statusSelect = document.getElementById(`status-select-${goalName}`);
+            if (statusSelect) {
+                statusSelect.value = status;
+            }
+        }
+
+        function updateGoalRating(projectId, goalName, rating) {
+            let projects = JSON.parse(localStorage.getItem('projects')) || [];
+            projects = projects.map(project => {
+                if (project.id === projectId) {
+                    project.goals = project.goals.map(goal => {
+                        if (goal.name === goalName) {
+                            goal.rating = rating;
+                        }
+                        return goal;
+                    });
+                }
+                return project;
+            });
+            localStorage.setItem('projects', JSON.stringify(projects));
+            localStorage.setItem(`rating-${projectId}-${goalName}`, rating); // Save goal rating to localStorage
+            loadProject();
+        }
+
+        function updateGoalDeadline(projectId, goalName, newDeadline) {
+            let projects = JSON.parse(localStorage.getItem('projects')) || [];
+            projects = projects.map(project => {
+                if (project.id === projectId) {
+                    project.goals = project.goals.map(goal => {
+                        if (goal.name === goalName) {
+                            goal.deadline = newDeadline;
+                        }
+                        return goal;
+                    });
+                }
+                return project;
+            });
+            localStorage.setItem('projects', JSON.stringify(projects));
+            loadProject();
+        }
+
+        function addGoal(projectId) {
+            let projects = JSON.parse(localStorage.getItem('projects')) || [];
+            projects = projects.map(project => {
+                if (project.id === projectId) {
+                    const newGoal = { name: '', status: 'Запрос', rating: 0, deadline: '' };
+                    project.goals.push(newGoal);
+                }
+                return project;
+            });
+            localStorage.setItem('projects', JSON.stringify(projects));
+            loadProject();
+        }
+
+        function enableGoalEdit(projectId, goalName) {
+            document.getElementById(`goal-name-${goalName}`).removeAttribute('readonly');
+            document.getElementById(`goal-deadline-${goalName}`).removeAttribute('readonly');
+            document.querySelector(`button.edit-btn[onclick="enableGoalEdit('${project.id}', '${goalName}')"]`).style.display = 'none';
+            document.querySelector(`button.approve-btn[onclick="confirmGoalEdit('${project.id}', '${goalName}')"]`).style.display = 'inline-block';
+        }
+
+        function confirmGoalEdit(projectId, goalName) {
+            const newGoalName = document.getElementById(`goal-name-${goalName}`).value;
+            const newGoalDeadline = document.getElementById(`goal-deadline-${goalName}`).value;
+            updateGoalName(projectId, goalName, newGoalName);
+            updateGoalDeadline(projectId, goalName, newGoalDeadline);
+        }
+
+        function deleteGoal(projectId, goalName) {
+            let projects = JSON.parse(localStorage.getItem('projects')) || [];
+            projects = projects.map(project => {
+                if (project.id === projectId) {
+                    project.goals = project.goals.filter(goal => goal.name !== goalName);
+                }
+                return project;
+            });
+            localStorage.setItem('projects', JSON.stringify(projects));
+            loadProject();
+        }
+
+        function updateGoalName(projectId, oldName, newName) {
+            let projects = JSON.parse(localStorage.getItem('projects')) || [];
+            projects = projects.map(project => {
+                if (project.id === projectId) {
+                    project.goals = project.goals.map(goal => {
+                        if (goal.name === oldName) {
+                            goal.name = newName;
+                        }
+                        return goal;
+                    });
+                }
+                return project;
+            });
+            localStorage.setItem('projects', JSON.stringify(projects));
+            loadProject();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "654353255",
+    "name": "12333353221",
+    "phase": "211444",
+    "comments": "242",
+    "startDate": "2024-07-25",
+    "endDate": "2024-08-03",
+    "weight": "10",
+    "employees": [
+      "Nurdaulet Zhumabekov"
+    ],
+    "status": "Ожидание",
+    "rating": "6",
+    "customerRating": "5",
+    "dependencies": [],
+    "goals": [
+      {
+        "name": "к йцу2",
+        "deadline": "2024-07-25",
+        "selected": true,
+        "status": "Ожидание",
+        "rating": "8"
+      }
+    ],
+    "type": "realization"
+  },
+  {
+    "id": "332422222",
+    "name": "424",
+    "phase": "42",
+    "comments": "24tf",
+    "startDate": "2024-07-18",
+    "endDate": "2024-07-19",
+    "weight": "10",
+    "employees": [
+      "Nurdaulet Zhumabekov"
+    ],
+    "status": "Запрос",
+    "rating": 0,
+    "customerRating": "Нет",
+    "dependencies": [],
+    "goals": [
+      {
+        "name": "goaldsd2",
+        "deadline": "2024-07-05",
+        "selected": true,
+        "status": "В пути",
+        "rating": "5"
+      },
+      {
+        "name": "gesdlf1",
+        "deadline": "2024-07-11",
+        "selected": false,
+        "status": "Ожидание согласования договора",
+        "rating": "6",
+        "customerRating": "Нет"
+      }
+    ],
+    "type": "realization"
+  }
+]

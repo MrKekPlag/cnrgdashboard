@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Процессы сотрудников</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        .header-left h1 {
+            margin: 0;
+        }
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .header-right input,
+        .header-right select,
+        .header-right button {
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .header-right button {
+            cursor: pointer;
+        }
+        .header-right .primary-btn {
+            background-color: #007bff;
+        }
+        .header-right .primary-btn:hover {
+            background-color: #0056b3;
+        }
+        .header-right .danger-btn {
+            background-color: #dc3545;
+        }
+        .header-right .danger-btn:hover {
+            background-color: #c82333;
+        }
+        .header-right .admin-btn {
+            background-color: #28a745;
+        }
+        .header-right .admin-btn:hover {
+            background-color: #218838;
+        }
+        #projects-container {
+            width: 100%;
+            margin-top: 20px;
+        }
+        .projects-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .projects-table th, .projects-table td {
+            padding: 10px;
+            text-align: left;
+            font-size: 12px;
+        }
+        .projects-table th {
+            background-color: #333;
+        }
+        .projects-table tr:nth-child(even) {
+            background-color: #444;
+        }
+        .projects-table tr:hover {
+            background-color: #555;
+        }
+        .project-name {
+            color: #fff;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .project-name:hover {
+            text-decoration: underline;
+        }
+        .tags {
+            color: #bbb;
+        }
+        .status-select, .goal-select {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #333;
+            color: #fff;
+        }
+        .goal-select {
+            width: 120px;
+        }
+        .status-select option, .goal-select option {
+            background-color: #333;
+            color: #fff;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            border: none;
+            padding: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .delete-btn img {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+        .rating, .customer-rating {
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .completion-date {
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .logo img {
+            width: 150px;
+        }
+        .toggle-container {
+            margin-top: 20px;
+        }
+        .toggle-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .toggle-header:hover {
+            background-color: #555;
+        }
+        .toggle-content {
+            display: none;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+        .status-color {
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #fff;
+        }
+        .projects-table th:nth-child(1) { width: 120px; }
+        .projects-table th:nth-child(2) { width: 80px; }
+        .projects-table th:nth-child(3) { width: 120px; }
+        .projects-table th:nth-child(4) { width: 120px; }
+        .projects-table th:nth-child(5) { width: 100px; }
+        .projects-table th:nth-child(6) { width: 100px; }
+        .projects-table th:nth-child(7) { width: 100px; }
+        .projects-table th:nth-child(8) { width: 150px; }
+        .projects-table th:nth-child(9) { width: 150px; }
+        .projects-table th:nth-child(10) { width: 100px; }
+        .projects-table th:nth-child(11) { width: 100px; }
+        .projects-table th:nth-child(12) { width: 100px; }
+        .projects-table th:nth-child(13) { width: 50px; }
+        .rating-btn {
+            background-color: #007bff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #fff;
+            margin-left: 10px;
+        }
+        .rating-btn:hover {
+            background-color: #0056b3;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #222;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 60%;
+            max-width: 800px;
+            border-radius: 4px;
+            color: #fff;
+            position: relative;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #fff;
+            text-decoration: none;
+        }
+        #employee-rating {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        #rating-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        #rating-table th, #rating-table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #444;
+        }
+        #rating-table th {
+            background-color: #333;
+        }
+        .rating-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .rating-buttons button {
+            background-color: #444;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #fff;
+        }
+        .rating-buttons button:hover {
+            background-color: #555;
+        }
+        .multiplier-input {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            width: 80px;
+            text-align: center;
+        }
+        .calculation-result {
+            margin-top: 20px;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+        }
+        /* Styles for dropdown menu */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            float: right; /* Расположение в правом верхнем углу */
+            margin-top: 10px;
+        }
+        .dropbtn {
+            background-color: #007bff;
+            color: white;
+            padding: 16px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0; /* Меняем на правую сторону */
+            background-color: #333;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown-content a {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: #575757;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown:hover .dropbtn {
+            background-color: #0056b3;
+        }
+        </style>
+    </head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Процессы сотрудников</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        .header-left h1 {
+            margin: 0;
+        }
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .header-right input,
+        .header-right select,
+        .header-right button {
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .header-right button {
+            cursor: pointer;
+        }
+        .header-right .primary-btn {
+            background-color: #007bff;
+        }
+        .header-right .primary-btn:hover {
+            background-color: #0056b3;
+        }
+        .header-right .danger-btn {
+            background-color: #dc3545;
+        }
+        .header-right .danger-btn:hover {
+            background-color: #c82333;
+        }
+        .header-right .admin-btn {
+            background-color: #28a745;
+        }
+        .header-right .admin-btn:hover {
+            background-color: #218838;
+        }
+        #projects-container {
+            width: 100%;
+            margin-top: 20px;
+        }
+        .projects-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .projects-table th, .projects-table td {
+            padding: 10px;
+            text-align: left;
+            font-size: 12px;
+        }
+        .projects-table th {
+            background-color: #333;
+        }
+        .projects-table tr:nth-child(even) {
+            background-color: #444;
+        }
+        .projects-table tr:hover {
+            background-color: #555;
+        }
+        .project-name {
+            color: #fff;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .project-name:hover {
+            text-decoration: underline;
+        }
+        .tags {
+            color: #bbb;
+        }
+        .status-select, .goal-select {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #333;
+            color: #fff;
+        }
+        .goal-select {
+            width: 120px;
+        }
+        .status-select option, .goal-select option {
+            background-color: #333;
+            color: #fff;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            border: none;
+            padding: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .delete-btn img {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+        .rating, .customer-rating {
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .completion-date {
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .logo img {
+            width: 150px;
+        }
+        .toggle-container {
+            margin-top: 20px;
+        }
+        .toggle-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .toggle-header:hover {
+            background-color: #555;
+        }
+        .toggle-content {
+            display: none;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+        .status-color {
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #fff;
+        }
+        .projects-table th:nth-child(1) { width: 120px; }
+        .projects-table th:nth-child(2) { width: 80px; }
+        .projects-table th:nth-child(3) { width: 120px; }
+        .projects-table th:nth-child(4) { width: 120px; }
+        .projects-table th:nth-child(5) { width: 100px; }
+        .projects-table th:nth-child(6) { width: 100px; }
+        .projects-table th:nth-child(7) { width: 100px; }
+        .projects-table th:nth-child(8) { width: 150px; }
+        .projects-table th:nth-child(9) { width: 150px; }
+        .projects-table th:nth-child(10) { width: 100px; }
+        .projects-table th:nth-child(11) { width: 100px; }
+        .projects-table th:nth-child(12) { width: 100px; }
+        .projects-table th:nth-child(13) { width: 50px; }
+        .rating-btn {
+            background-color: #007bff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #fff;
+            margin-left: 10px;
+        }
+        .rating-btn:hover {
+            background-color: #0056b3;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #222;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 60%;
+            max-width: 800px;
+            border-radius: 4px;
+            color: #fff;
+            position: relative;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #fff;
+            text-decoration: none;
+        }
+        #employee-rating {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        #rating-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        #rating-table th, #rating-table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #444;
+        }
+        #rating-table th {
+            background-color: #333;
+        }
+        .rating-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .rating-buttons button {
+            background-color: #444;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #fff;
+        }
+        .rating-buttons button:hover {
+            background-color: #555;
+        }
+        .multiplier-input {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            width: 80px;
+            text-align: center;
+        }
+        .calculation-result {
+            margin-top: 20px;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+        }
+        /* Styles for dropdown menu */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            float: right; /* Расположение в правом верхнем углу */
+            margin-top: 10px;
+        }
+        .dropbtn {
+            background-color: #007bff;
+            color: white;
+            padding: 16px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0; /* Меняем на правую сторону */
+            background-color: #333;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown-content a {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: #575757;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown:hover .dropbtn {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <a href="projects.html" class="logo"><img src="cnrg.png" alt="C-NRG Logo" width="150"></a>
+    <div class="header">
+        <div class="header-left">
+            <h1>Процессы сотрудников</h1>
+        </div>
+        <div class="header-right">
+            <input type="text" id="search" placeholder="Поиск по названию...">
+            <select id="filter-status">
+                <option value="">Все статусы</option>
+            </select>
+            <button class="primary-btn" onclick="addProject()">Добавить проект</button>
+            <button class="admin-btn" onclick="openRatingModal()">Оценки матрицы сотрудников</button>
+            <button class="danger-btn" onclick="logout()">Выйти</button>
+        </div>
+    </div>
+    <div id="projects-container">
+        <table class="projects-table">
+            <thead>
+                <tr>
+                    <th>Название процесса</th>
+                    <th>ID</th>
+                    <th>Зависимость</th>
+                    <th>Цель</th>
+                    <th>Статус</th>
+                    <th>Оценка Руководства</th>
+                    <th>Оценка заказчика</th>
+                    <th>Срок выполнения цели</th>
+                    <th>Срок выполнения</th>
+                    <th>Итоговая оценка</th>
+                    <th>Итоговая оценка заказчика</th>
+                    <th>Итоговый срок выполнения</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="projects-table-body"></tbody>
+        </table>
+    </div>
+    <div id="rating-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeRatingModal()">&times;</span>
+            <h2>Оценки матрицы сотрудников</h2>
+            <div id="employee-rating">
+                <table id="rating-table">
+                    <thead>
+                        <tr>
+                            <th>Имя сотрудника</th>
+                            <th>Фамилия сотрудника</th>
+                            <th>Рассчитываемая оценка</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rating-table-body"></tbody>
+                </table>
+                <div class="calculation-result">
+                    <div>Рассчитываемая оценка: <span id="calculated-rating"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProjects();
+            loadStatuses();
+            document.getElementById('search').addEventListener('input', filterProjects);
+            document.getElementById('filter-status').addEventListener('change', filterProjects);
+        });
+
+        async function loadProjects() {
+            try {
+                const response = await fetch('http://91.147.92.132:3000/projects', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const projects = await response.json();
+                const tableBody = document.getElementById('projects-table-body');
+                tableBody.innerHTML = '';
+                projects.forEach(project => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${project.name}</td>
+                        <td>${project.id}</td>
+                        <td>${project.dependencies.join(', ')}</td>
+                        <td>${project.goals.map(goal => goal.goal).join(', ')}</td>
+                        <td>${project.status}</td>
+                        <td>${project.rating}</td>
+                        <td>${project.customerRating}</td>
+                        <td>${project.goals.map(goal => goal.deadline).join(', ')}</td>
+                        <td>${project.deadline}</td>
+                        <td>${project.finalRating}</td>
+                        <td>${project.finalCustomerRating}</td>
+                        <td>${project.finalCompletionDate}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteProject('${project.id}')">
+                                <img src="delete.png" alt="Удалить">
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                alert('Error loading projects: ' + error.message);
+            }
+        }
+
+        async function loadStatuses() {
+            try {
+                const response = await fetch('http://91.147.92.132:3000/statuses.json');
+                if (!response.ok) {
+                    throw new Error('Failed to load statuses');
+                }
+                const statuses = await response.json();
+                const filterStatus = document.getElementById('filter-status');
+                statuses.forEach(status => {
+                    const option = document.createElement('option');
+                    option.value = status.name;
+                    option.textContent = status.name;
+                    filterStatus.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading statuses:', error);
+                alert('Error loading statuses: ' + error.message);
+            }
+        }
+
+        function filterProjects() {
+            const search = document.getElementById('search').value.toLowerCase();
+            const filterStatus = document.getElementById('filter-status').value;
+            const tableBody = document.getElementById('projects-table-body');
+            const rows = tableBody.getElementsByTagName('tr');
+            for (let row of rows) {
+                const cells = row.getElementsByTagName('td');
+                const projectName = cells[0].textContent.toLowerCase();
+                const projectStatus = cells[4].textContent;
+                if ((search === '' || projectName.includes(search)) && (filterStatus === '' || projectStatus === filterStatus)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+
+        function addProject() {
+            window.location.href = 'new_project.html';
+        }
+
+        function openRatingModal() {
+            document.getElementById('rating-modal').style.display = 'block';
+        }
+
+        function closeRatingModal() {
+            document.getElementById('rating-modal').style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        async function deleteProject(id) {
+            if (confirm('Вы уверены, что хотите удалить этот проект?')) {
+                try {
+                    const response = await fetch(`http://91.147.92.132:3000/projects/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    alert('Проект успешно удален');
+                    loadProjects();
+                } catch (error) {
+                    console.error('Error deleting project:', error);
+                    alert('Error deleting project: ' + error.message);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+[
+  {
+    "id": "234443234",
+    "name": "32432432",
+    "phase": "424",
+    "comments": "23424",
+    "startDate": "2024-07-18",
+    "endDate": "2024-07-20",
+    "weight": "10",
+    "budget": "",
+    "employees": [
+      "Nurdaulet Zhumabekov"
+    ],
+    "status": "Запрос",
+    "rating": 0,
+    "customerRating": "Нет",
+    "dependencies": [
+      "234929999"
+    ],
+    "goals": [
+      {
+        "name": "23423",
+        "deadline": "2024-07-19",
+        "selected": true,
+        "status": "Ожидание согласования договора"
+      },
+      {
+        "name": "wqeqwrwq",
+        "deadline": "2024-07-11",
+        "selected": false,
+        "status": "Выполнено"
+      }
+    ],
+    "type": "generation"
+  }
+]

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register User</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        .form-container h1 {
+            margin-bottom: 20px;
+        }
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #0056b3;
+        }
+        .logo img {
+            width: 150px;
+        }
+        .logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+  <div class="logo">
+    <a href="projects.html" class="logo"><img src="cnrg.png" alt="C-NRG Logo"></a>
+  </div>    <div class="form-container">
+        <h1>Register User</h1>
+        <input type="text" id="first-name" placeholder="First Name">
+        <input type="text" id="last-name" placeholder="Last Name">
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <select id="role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+        </select>
+        <button onclick="registerUser()">Register</button>
+    </div>
+    <script>
+        async function registerUser() {
+            const firstName = document.getElementById('first-name').value;
+            const lastName = document.getElementById('last-name').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+
+            try {
+                const response = await fetch('http://localhost:3000/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ firstName, lastName, username, password, role })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.accessToken);
+                    localStorage.setItem('role', data.role);
+                    localStorage.setItem('firstName', data.firstName);
+                    localStorage.setItem('lastName', data.lastName);
+                    alert('Registration successful');
+                    window.location.href = 'projects.html';
+                } else {
+                    throw new Error('Registration failed');
+                }
+            } catch (error) {
+                alert('Error registering user: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
