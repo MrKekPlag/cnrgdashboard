@@ -157,22 +157,75 @@ function writeProjects(type, projects) {
     fs.writeFileSync(filePath, JSON.stringify(projects, null, 2));
 }
 
-function createNewProjectTemplate(projectName, projectId, employees, goals, dependencies, startDate, endDate, rating = 0, customerRating = "Нет", deadline) {
-    return {
-        name: projectName,
-        id: projectId,
-        employees: employees,
-        goals: goals.map(goal => ({
-            ...goal,
-            deadline: deadline || goal.deadline || ""
-        })),
-        dependencies: dependencies,
-        startDate: startDate,
-        endDate: endDate,
-        rating: rating,
-        customerRating: customerRating,
-        deadline: deadline
-    };
+function createNewProjectTemplate(projectData, type) {
+    if (type === 'realization') {
+        return {
+            id: projectData.id,
+            name: projectData.name,
+            phase: projectData.phase,
+            comments: projectData.comments,
+            startDate: projectData.startDate,
+            endDate: projectData.endDate,
+            weight: projectData.weight,
+            employees: projectData.employees,
+            status: projectData.status,
+            rating: projectData.rating,
+            customerRating: projectData.customerRating,
+            dependencies: projectData.dependencies,
+            goals: projectData.goals.map(goal => ({
+                name: goal.name,
+                deadline: goal.deadline,
+                selected: goal.selected || false,
+                status: goal.status || "Запрос",
+                rating: goal.rating || 0
+            })),
+            type: "realization"
+        };
+    } else if (type === 'generation') {
+        return {
+            id: projectData.id,
+            name: projectData.name,
+            phase: projectData.phase,
+            comments: projectData.comments,
+            startDate: projectData.startDate,
+            endDate: projectData.endDate,
+            weight: projectData.weight,
+            budget: projectData.budget,
+            employees: projectData.employees,
+            status: projectData.status,
+            rating: projectData.rating,
+            customerRating: projectData.customerRating,
+            dependencies: projectData.dependencies,
+            goals: projectData.goals.map(goal => ({
+                name: goal.name,
+                deadline: goal.deadline,
+                selected: goal.selected || false,
+                status: goal.status || "Запрос"
+            })),
+            type: "generation"
+        };
+    } else {
+        return {
+            id: projectData.id,
+            name: projectData.name,
+            comments: projectData.comments,
+            deadline: projectData.deadline,
+            weight: projectData.weight,
+            employees: projectData.employees,
+            products: projectData.products || [],
+            status: projectData.status,
+            rating: projectData.rating,
+            customerRating: projectData.customerRating,
+            goals: projectData.goals.map(goal => ({
+                name: goal.name,
+                deadline: goal.deadline,
+                status: goal.status || "Запрос",
+                customerRating: goal.customerRating || "Нет"
+            })),
+            dependencies: projectData.dependencies,
+            finalCompletionDate: projectData.finalCompletionDate || ""
+        };
+    }
 }
 
 app.get('/projects', authenticateToken, (req, res) => {
@@ -216,19 +269,32 @@ app.post('/createProjectFile', authenticateToken, (req, res) => {
 });
 
 app.post('/projects', authenticateToken, (req, res) => {
-    const { name, id, employees, goals, dependencies, startDate, endDate, deadline, type } = req.body;
+    const { name, id, employees, goals, dependencies, startDate, endDate, phase, comments, weight, status, type, products, budget } = req.body;
 
-    const newProject = createNewProjectTemplate(name, id, employees, goals, dependencies, startDate, endDate, 0, "Нет", deadline);
+    const projectData = {
+        name, id, employees, goals, dependencies, startDate, endDate, phase, comments, weight, status, products, budget
+    };
 
-    let projects = readProjects(type);
-    projects.push(newProject);
-    writeProjects(type, projects);
+    const newProject = createNewProjectTemplate(projectData, type);
 
-    if (dependencies && dependencies.length > 0) {
-        updateDependenciesForProject(id, dependencies);
+    console.log('Creating new project:', newProject);
+
+    try {
+        let projects = readProjects(type);
+        projects.push(newProject);
+        console.log(`Projects before saving: ${JSON.stringify(projects, null, 2)}`);
+        writeProjects(type, projects);
+        console.log('Project saved successfully.');
+
+        if (dependencies && dependencies.length > 0) {
+            updateDependenciesForProject(id, dependencies);
+        }
+
+        res.status(201).send(newProject);
+    } catch (error) {
+        console.error('Error saving project:', error);
+        res.status(500).send('Internal Server Error');
     }
-
-    res.status(201).send(newProject);
 });
 
 app.patch('/projects/:id/status', authenticateToken, (req, res) => {

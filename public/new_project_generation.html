@@ -304,7 +304,7 @@
             const currentSelections = Array.from(document.getElementsByClassName('employee')).map(select => select.value);
 
             try {
-                const response = await fetch('http://localhost:3000/auth/users', {
+              const response = await fetch('http://91.147.92.132:3000/auth/users', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -432,11 +432,11 @@
                 employees,
                 startDate,
                 endDate,
-                type: 'generationProjects'
+                type: 'generation'
             };
 
             try {
-                const response = await fetch('http://localhost:3000/projects', {
+              const response = await fetch('http://91.147.92.132:3000/projects', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -471,7 +471,7 @@
         async function populateDependencyList() {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:3000/projects/all', {
+                const response = await fetch('http://91.147.92.132:3000/projects/all', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }

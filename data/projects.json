@@ -31,22 +31,30 @@
     "finalCompletionDate": ""
   },
   {
-    "name": "32к3йцу",
-    "id": "343212428",
+    "name": "kaw22",
+    "id": "994444443",
     "employees": [
       "Nurdaulet Zhumabekov"
     ],
     "goals": [
       {
-        "goal": "цйукй",
-        "deadline": "2024-07-24"
+        "name": "oasd12",
+        "deadline": "2024-08-25",
+        "selected": false,
+        "status": "Запрос",
+        "rating": 0,
+        "customerRating": "Нет"
       }
     ],
-    "dependencies": [
-      "432433222"
-    ],
+    "dependencies": [],
+    "startDate": "2024-08-01",
+    "endDate": "2024-08-30",
+    "phase": "c",
+    "comments": "comms",
+    "weight": "10",
+    "status": "Запрос",
     "rating": 0,
     "customerRating": "Нет",
-    "deadline": "2024-07-24"
+    "type": "realizationProjects"
   }
 ]
