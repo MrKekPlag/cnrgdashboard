@@ -179,7 +179,8 @@
         .projects-table th:nth-child(10) { width: 100px; }
         .projects-table th:nth-child(11) { width: 100px; }
         .projects-table th:nth-child(12) { width: 100px; }
-        .projects-table th:nth-child(13) { width: 50px; }
+        .projects-table th:nth-child(13) { width: 100px; }
+        .projects-table th:nth-child(14) { width: 50px; }
         .rating-btn {
             background-color: #007bff;
             border: none;
@@ -333,11 +334,11 @@
             <div class="dropdown">
                 <button class="dropbtn">Меню</button>
                 <div class="dropdown-content">
-                    <a href="admin_panel.html">Админ-Панель</a>
+                    <a id="admin-panel-btn" href="admin_panel.html">Админ-Панель</a>
                     <a href="projects_realization.html">Проекты Реализации</a>
                     <a href="projects_generation.html">Проекты Генерации</a>
                     <a href="projects.html">Процессы Сотрудников</a>
-                    <a href="logout.html">Выйти</a>
+                    <a href="index.html">Выйти</a>
                 </div>
             </div>
         </div>
@@ -387,8 +388,8 @@
             document.getElementById('filter').addEventListener('change', () => loadProjects());
 
             const role = localStorage.getItem('role');
-            if (role === 'admin') {
-                document.getElementById('admin-panel-btn').style.display = 'block';
+            if (role !== 'admin') {
+                document.getElementById('admin-panel-btn').style.display = 'none';
             }
         });
 
@@ -545,6 +546,7 @@
                             <th>Фаза</th>
                             <th>Оценка Руководства</th>
                             <th>Оценка Заказчика</th>
+                            <th>Бюджет</th>
                             <th></th>
                         </tr>
                     `;
@@ -596,17 +598,18 @@
                             <td>${project.comments || 'Нет комментариев'}</td>
                             <td>${project.phase || 'Нет фазы'}</td>
                             <td>
-                                <select class="rating" onchange="updateProjectRating('${project.id}', this.value, 'manager')">
+                                <select class="rating" ${localStorage.getItem('role') !== 'admin' ? 'disabled' : ''} onchange="updateProjectRating('${project.id}', this.value, 'manager')">
                                     ${Array.from({ length: 11 }, (_, i) => `<option value="${i}" ${i == project.rating ? 'selected' : ''}>${i}</option>`).join('')}
                                 </select>
                             </td>
                             <td>
-                                <select class="customer-rating" onchange="updateProjectRating('${project.id}', this.value, 'customer')">
+                                <select class="customer-rating" ${localStorage.getItem('role') !== 'admin' ? 'disabled' : ''} onchange="updateProjectRating('${project.id}', this.value, 'customer')">
                                     <option value="Нет" ${project.customerRating === "Нет" ? 'selected' : ''}>Нет</option>
                                     ${Array.from({ length: 11 }, (_, i) => `<option value="${i}" ${i == project.customerRating ? 'selected' : ''}>${i}</option>`).join('')}
                                 </select>
                             </td>
-                            <td><button class="delete-btn" onclick="deleteProject('${project.id}', 'realization')"><img src="delete.png" alt="Удалить"></button></td>
+                            <td>${project.budget || 'Не указан'}</td>
+                            <td><button class="delete-btn" ${localStorage.getItem('role') !== 'admin' ? 'style="display: none;"' : ''} onclick="deleteProject('${project.id}', 'realization')"><img src="delete.png" alt="Удалить"></button></td>
                         `;
                         tbody.appendChild(projectRow);
                     });
@@ -688,45 +691,22 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
-                    body: JSON.stringify({ ratingType, rating, type: 'realization' })
+                    body: JSON.stringify({ ratingType, rating })
                 });
 
                 if (!response.ok) {
                     throw new Error('Failed to update project rating');
                 }
 
-                console.log('Rating updated successfully');
                 loadProjects();
             } catch (error) {
                 console.error('Error updating project rating:', error);
             }
         }
 
-        async function updateCompletionDate(projectId, date) {
-            try {
-                const formattedDate = formatDateFromEU(date);
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/completion-date`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ date: formattedDate, type: 'realization' })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to update completion date');
-                }
-
-                loadProjects();
-            } catch (error) {
-                console.error('Error updating completion date:', error);
-            }
-        }
-
         async function deleteProject(projectId, type) {
             try {
-                const response = await fetch(`http://91.147.92.132:/projects/${projectId}?type=${type}`, {
+                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -744,59 +724,35 @@
         }
 
         function openProject(projectId) {
-            window.location.href = `project.html?id=${projectId}`;
+            window.location.href = `project_details.html?id=${projectId}`;
         }
 
-        async function openRatingMatrix(employeeName) {
-            try {
-                const response = await fetch('http://91.147.92.132:3000/projects/all', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+        function openRatingMatrix(employee) {
+            const modal = document.getElementById('rating-modal');
+            const modalTitle = document.getElementById('rating-modal-title');
+            modalTitle.innerText = `Матрица оценки сотрудника: ${employee}`;
+            const ratingTableBody = document.getElementById('rating-table-body');
+            const projects = JSON.parse(localStorage.getItem('projects')) || [];
+            const employeeProjects = projects.filter(project => project.employees.includes(employee));
+            ratingTableBody.innerHTML = '';
 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const projects = await response.json();
-                const employeeProjects = projects.filter(project => project.employees.includes(employeeName) && project.rating != 0);
-
-                const modal = document.getElementById('rating-modal');
-                const modalTitle = document.getElementById('rating-modal-title');
-                modalTitle.textContent = `Матрица оценки сотрудника: ${employeeName}`;
-
-                const ratingTableBody = document.getElementById('rating-table-body');
-                ratingTableBody.innerHTML = '';
-
-                let totalCalculatedRating = 0;
-
-                employeeProjects.forEach(project => {
-                    const managerRating = project.rating !== undefined ? project.rating : 0;
-                    const customerRating = project.customerRating !== undefined ? project.customerRating : "Нет";
-                    const calculatedRating = calculateFinalRating(managerRating, customerRating, project.weight);
-                    totalCalculatedRating += parseFloat(calculatedRating);
-
+            employeeProjects.forEach(project => {
+                project.goals.forEach(goal => {
+                    const finalRating = calculateFinalRating(goal.rating, goal.customerRating, project.weight);
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${project.name}</td>
                         <td>${project.id}</td>
-                        <td>${managerRating}</td>
-                        <td>${customerRating}</td>
+                        <td>${goal.rating}</td>
+                        <td>${goal.customerRating}</td>
                         <td>${project.weight}</td>
-                        <td>${calculatedRating}</td>
+                        <td>${finalRating}</td>
                     `;
                     ratingTableBody.appendChild(row);
                 });
+            });
 
-                const averageCalculatedRating = totalCalculatedRating / employeeProjects.length;
-                const calculatedRatingElem = document.getElementById('calculated-rating');
-                calculatedRatingElem.textContent = averageCalculatedRating.toFixed(2);
-
-                modal.style.display = 'block';
-            } catch (error) {
-                console.error('Error opening rating matrix:', error);
-            }
+            modal.style.display = 'block';
         }
 
         function closeModal() {
@@ -807,12 +763,15 @@
         function applyMultiplier(multiplier) {
             const input = document.getElementById('multiplier-input');
             input.value = multiplier;
-            const calculatedRatingElem = document.getElementById('calculated-rating');
-            const totalCalculatedRating = parseFloat(calculatedRatingElem.textContent);
-            const finalRating = totalCalculatedRating * multiplier;
-            calculatedRatingElem.textContent = finalRating.toFixed(2);
+            calculateRating();
         }
 
+        function calculateRating() {
+            const multiplier = parseFloat(document.getElementById('multiplier-input').value);
+            const calculatedRating = parseFloat(document.getElementById('calculated-rating').innerText);
+            const finalRating = calculatedRating * multiplier;
+            document.getElementById('calculated-rating').innerText = finalRating.toFixed(2);
+        }
     </script>
 </body>
 </html>
