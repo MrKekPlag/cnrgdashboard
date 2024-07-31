@@ -11,7 +11,6 @@ const port = 3000;
 
 app.use(bodyParser.json());
 app.use(cors());
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 const SECRET_KEY = 'your-secret-key';
@@ -158,90 +157,69 @@ function writeProjects(type, projects) {
 }
 
 function createNewProjectTemplate(projectData, type) {
-    if (type === 'realization') {
+    const { name, id, employees, goals, dependencies, startDate, endDate, phase, comments, weight, status, products, budget, deadline } = projectData;
+
+    const baseProject = {
+        name,
+        id,
+        employees,
+        goals: goals.map(goal => ({
+            name: goal.name,
+            deadline: goal.deadline,
+            status: goal.status || "",
+            rating: goal.rating || 0,
+            customerRating: goal.customerRating || "Нет"
+        })),
+        dependencies,
+        startDate,
+        endDate,
+        phase,
+        comments,
+        weight,
+        status,
+        products,
+        budget,
+        deadline,
+        finalCompletionDate: deadline
+    };
+
+    if (type === 'generation') {
         return {
-            id: projectData.id,
-            name: projectData.name,
-            phase: projectData.phase,
-            comments: projectData.comments,
-            startDate: projectData.startDate,
-            endDate: projectData.endDate,
-            weight: projectData.weight,
-            employees: projectData.employees,
-            status: projectData.status,
-            rating: projectData.rating,
-            customerRating: projectData.customerRating,
-            dependencies: projectData.dependencies,
-            goals: projectData.goals.map(goal => ({
-                name: goal.name,
-                deadline: goal.deadline,
-                selected: goal.selected || false,
-                status: goal.status || "Запрос",
-                rating: goal.rating || 0
-            })),
-            type: "realization"
+            ...baseProject,
+            budget
         };
-    } else if (type === 'generation') {
-        return {
-            id: projectData.id,
-            name: projectData.name,
-            phase: projectData.phase,
-            comments: projectData.comments,
-            startDate: projectData.startDate,
-            endDate: projectData.endDate,
-            weight: projectData.weight,
-            budget: projectData.budget,
-            employees: projectData.employees,
-            status: projectData.status,
-            rating: projectData.rating,
-            customerRating: projectData.customerRating,
-            dependencies: projectData.dependencies,
-            goals: projectData.goals.map(goal => ({
-                name: goal.name,
-                deadline: goal.deadline,
-                selected: goal.selected || false,
-                status: goal.status || "Запрос"
-            })),
-            type: "generation"
-        };
-    } else {
-        return {
-            id: projectData.id,
-            name: projectData.name,
-            comments: projectData.comments,
-            deadline: projectData.deadline,
-            weight: projectData.weight,
-            employees: projectData.employees,
-            products: projectData.products || [],
-            status: projectData.status,
-            rating: projectData.rating,
-            customerRating: projectData.customerRating,
-            goals: projectData.goals.map(goal => ({
-                name: goal.name,
-                deadline: goal.deadline,
-                status: goal.status || "Запрос",
-                customerRating: goal.customerRating || "Нет"
-            })),
-            dependencies: projectData.dependencies,
-            finalCompletionDate: projectData.finalCompletionDate || ""
-        };
+    } else if (type === 'realization') {
+        return baseProject;
     }
+
+    return baseProject;
 }
 
 app.get('/projects', authenticateToken, (req, res) => {
-    let projects = readProjects('projects');
+    const projects = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'projects.json')));
     res.json(projects);
 });
 
 app.get('/projects/generation', authenticateToken, (req, res) => {
-    let generationProjects = readProjects('generation');
-    console.log(`Returning generation projects:`, generationProjects);
-    res.json(generationProjects);
+    try {
+        let generationProjects = readProjects('generation');
+        console.log('Returning generation projects:', generationProjects);
+        res.json(generationProjects);
+    } catch (error) {
+        console.error('Error loading generation projects:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.get('/projects/realization', authenticateToken, (req, res) => {
-    let realizationProjects = readProjects('realization');
-    res.json(realizationProjects);
+    try {
+        let realizationProjects = readProjects('realization');
+        console.log('Returning realization projects:', realizationProjects);
+        res.json(realizationProjects);
+    } catch (error) {
+        console.error('Error loading realization projects:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.get('/projects/all', authenticateToken, (req, res) => {
@@ -269,10 +247,41 @@ app.post('/createProjectFile', authenticateToken, (req, res) => {
 });
 
 app.post('/projects', authenticateToken, (req, res) => {
-    const { name, id, employees, goals, dependencies, startDate, endDate, phase, comments, weight, status, type, products, budget } = req.body;
+    const { name, id, employees, goals, dependencies, startDate, endDate, phase, comments, weight, status, products, budget, deadline, type } = req.body;
+
+    // Логирование полученных данных для отладки
+    console.log('Received project data:', req.body);
+
+    // Валидация обязательных полей
+    const missingFields = [];
+    if (!name) missingFields.push('name');
+    if (!id) missingFields.push('id');
+    if (!employees || employees.length === 0) missingFields.push('employees');
+    if (!goals || goals.length === 0) missingFields.push('goals');
+    if (!type) missingFields.push('type');
+    if (!startDate) missingFields.push('startDate');
+    if (!endDate) missingFields.push('endDate');
+    if (missingFields.length > 0) {
+        console.error('Missing required fields:', missingFields);
+        return res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
+    }
 
     const projectData = {
-        name, id, employees, goals, dependencies, startDate, endDate, phase, comments, weight, status, products, budget
+        name,
+        id,
+        employees,
+        goals,
+        dependencies,
+        startDate,
+        endDate,
+        phase,
+        comments,
+        weight,
+        status,
+        type,
+        products,
+        budget,
+        deadline
     };
 
     const newProject = createNewProjectTemplate(projectData, type);
@@ -332,6 +341,16 @@ app.patch('/projects/:id/status', authenticateToken, (req, res) => {
     res.status(200).send('Goal status updated successfully');
 });
 
+app.get('/statuses', authenticateToken, (req, res) => {
+    try {
+        const statuses = JSON.parse(fs.readFileSync(path.join(__dirname, 'statuses.json')));
+        res.json(statuses);
+    } catch (error) {
+        console.error('Error loading statuses:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 app.patch('/projects/:id/rating', authenticateToken, (req, res) => {
     const { id } = req.params;
     const { ratingType, rating, type } = req.body;
@@ -351,22 +370,12 @@ app.patch('/projects/:id/rating', authenticateToken, (req, res) => {
         project.rating = rating;
     } else if (ratingType === 'customer') {
         project.customerRating = rating;
+    } else {
+        return res.status(400).send('Invalid rating type');
     }
 
     writeProjects(type, projects);
     res.status(200).send('Project rating updated successfully');
-});
-
-// Маршрут для получения статусов
-app.get('/statuses.json', (req, res) => {
-    res.sendFile(path.join(__dirname, 'statuses.json'));
-});
-
-app.patch('/statuses', authenticateToken, (req, res) => {
-    statuses = req.body;
-    fs.writeFileSync('./statuses.json', JSON.stringify(statuses, null, 2));
-    console.log('Statuses updated');
-    res.status(200).send('Statuses updated successfully');
 });
 
 app.patch('/projects/:id/completion-date', authenticateToken, (req, res) => {
@@ -383,7 +392,7 @@ app.patch('/projects/:id/completion-date', authenticateToken, (req, res) => {
         return res.status(404).json({ error: 'Project not found' });
     }
 
-    project.finalCompletionDate = date;
+    project.deadline = date;
 
     try {
         writeProjects(type, projects);
@@ -392,6 +401,32 @@ app.patch('/projects/:id/completion-date', authenticateToken, (req, res) => {
     } catch (err) {
         console.error('Error writing to file:', err);
         res.status(500).json({ error: 'Failed to update completion date' });
+    }
+});
+
+app.patch('/projects/:id/final-completion-date', authenticateToken, (req, res) => {
+    const projectId = req.params.id;
+    const { date, type } = req.body;
+
+    console.log(`Updating final completion date for project ${projectId} of type ${type} to ${date}`);
+
+    let projects = readProjects(type);
+
+    const project = projects.find(p => p.id === projectId);
+    if (!project) {
+        console.error('Project not found:', projectId);
+        return res.status(404).json({ error: 'Project not found' });
+    }
+
+    project.finalCompletionDate = date;
+
+    try {
+        writeProjects(type, projects);
+        console.log(`Final completion date updated successfully for project ${projectId}`);
+        res.json({ message: 'Final completion date updated successfully' });
+    } catch (err) {
+        console.error('Error writing to file:', err);
+        res.status(500).json({ error: 'Failed to update final completion date' });
     }
 });
 
@@ -435,69 +470,66 @@ app.patch('/projects/:id/transfer', authenticateToken, (req, res) => {
 
 app.patch('/projects/:id/add-employee', authenticateToken, (req, res) => {
     const { id } = req.params;
-    const { newEmployee } = req.body;
+    const { employee, type } = req.body;
 
-    let projects = readProjects('projects');
+    if (!type) {
+        return res.status(400).send('Type is required');
+    }
+
+    let projects = readProjects(type);
     let project = projects.find(p => p.id === id);
 
     if (!project) {
         return res.status(404).send('Project not found');
     }
 
-    if (!project.employees.includes(newEmployee)) {
-        project.employees.push(newEmployee);
-        writeProjects('projects', projects);
-        res.status(200).send('Employee added successfully');
-    } else {
-        res.status(400).send('Employee already assigned to the project');
+    if (!project.employees.includes(employee)) {
+        project.employees.push(employee);
     }
+
+    writeProjects(type, projects);
+    res.status(200).send('Employee added successfully');
 });
 
-app.patch('/projects/:id/remove-employee', authenticateToken, (req, res) => {
+app.delete('/projects/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
-    const { employeeToRemove } = req.body;
+    const { type } = req.query;
 
-    let projects = readProjects('projects');
-    let project = projects.find(p => p.id === id);
-
-    if (!project) {
-        return res.status(404).send('Project not found');
+    if (!type) {
+        return res.status(400).send('Type is required');
     }
 
-    project.employees = project.employees.filter(employee => employee !== employeeToRemove);
-    writeProjects('projects', projects);
+    let projects = readProjects(type);
+    const updatedProjects = projects.filter(p => p.id !== id);
 
-    res.status(200).send('Employee removed successfully');
+    writeProjects(type, updatedProjects);
+
+    res.status(200).send('Project deleted successfully');
 });
 
-// Update dependencies when creating a new project
-const updateDependenciesForProject = async (projectId, dependencies) => {
+app.get('/projects/generation', authenticateToken, (req, res) => {
     try {
-        const updateDependencyInFile = async (filePath, projectId, dependencyId) => {
-            let projects = JSON.parse(await fs.promises.readFile(filePath, 'utf8'));
-            let project = projects.find(p => p.id === dependencyId);
-            if (!project) return false;
-
-            if (!project.dependencies) project.dependencies = [];
-            if (!project.dependencies.includes(projectId)) {
-                project.dependencies.push(projectId);
-            }
-
-            await fs.promises.writeFile(filePath, JSON.stringify(projects, null, 2));
-            return true;
-        };
-
-        for (const dependencyId of dependencies) {
-            await updateDependencyInFile(path.join(__dirname, 'data', 'projects.json'), projectId, dependencyId);
-            await updateDependencyInFile(path.join(__dirname, 'data', 'generationProjects.json'), projectId, dependencyId);
-            await updateDependencyInFile(path.join(__dirname, 'data', 'realizationProjects.json'), projectId, dependencyId);
-        }
-    } catch (err) {
-        console.error('Error updating dependencies:', err);
-        throw err;
+        let generationProjects = readProjects('generation');
+        console.log('Returning generation projects:', generationProjects);
+        res.json(generationProjects);
+    } catch (error) {
+        console.error('Error loading generation projects:', error);
+        res.status(500).send('Internal Server Error');
     }
-};
+});
+
+app.get('/projects/realization', authenticateToken, (req, res) => {
+    const projects = readProjects('realization');
+    res.json(projects);
+});
+
+app.get('/projects/all', authenticateToken, (req, res) => {
+    const generationProjects = readProjects('generation');
+    const realizationProjects = readProjects('realization');
+    const projects = generationProjects.concat(realizationProjects);
+    res.json(projects);
+});
 
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    console.log(`Server running at http://localhost:${port}/`);
 });

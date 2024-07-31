@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Проекты Генерации</title>
     <style>
+        /* Add your styles here */
         body {
             background-color: #222;
             color: #fff;
@@ -178,7 +179,8 @@
         .projects-table th:nth-child(10) { width: 100px; }
         .projects-table th:nth-child(11) { width: 100px; }
         .projects-table th:nth-child(12) { width: 100px; }
-        .projects-table th:nth-child(13) { width: 50px; }
+        .projects-table th:nth-child(13) { width: 100px; }
+        .projects-table th:nth-child(14) { width: 50px; }
         .rating-btn {
             background-color: #007bff;
             border: none;
@@ -365,7 +367,7 @@
             </table>
             <div class="calculation-result">
                 <span>Калькуляция:</span>
-                <span id="calculation-result"></span>
+                <span id="calculated-rating"></span>
             </div>
             <div class="rating-buttons">
                 <button onclick="applyMultiplier(0)">0</button>
@@ -393,7 +395,11 @@
 
         async function loadStatuses() {
             try {
-                const response = await fetch('http://91.147.92.132:3000/statuses.json');
+                const response = await fetch('http://91.147.92.132:3000/statuses', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -468,12 +474,20 @@
 
                     const matchingGoal = project.goals.find(goal => goal.name && goal.name.toLowerCase().includes(searchQuery));
                     const matchingEmployee = project.employees.find(employee => employee && employee.toLowerCase().includes(searchQuery));
+                    const hasMatchingStatus = filterStatus === 'All' || project.goals.some(goal => {
+                        const statusMatches = goal.status === filterStatus;
+                        if (statusMatches) {
+                            console.log(`Matching project: ${project.name}, Status: ${goal.status}`);
+                        }
+                        return statusMatches;
+                    });
+
                     if (
                         (project.name && project.name.toLowerCase().includes(searchQuery)) ||
                         matchingGoal ||
                         (project.id && project.id.includes(searchQuery)) ||
                         matchingEmployee &&
-                        (filterStatus === 'All' || project.goals.some(goal => goal.status === filterStatus))
+                        hasMatchingStatus
                     ) {
                         project.employees.forEach(employee => {
                             if (!employeesProjectsMap[employee]) {
@@ -528,10 +542,11 @@
                             <th>Дата начала</th>
                             <th>План завершения</th>
                             <th>Ответственные</th>
-                            <th>Комментарий</th>
+                            <th>Комментарии</th>
                             <th>Фаза</th>
                             <th>Оценка Руководства</th>
                             <th>Оценка Заказчика</th>
+                            <th>Бюджет</th>
                             <th></th>
                         </tr>
                     `;
@@ -556,12 +571,8 @@
                                 project.goals.forEach(goal => goal.selected = goal.name === matchingGoal.name);
                             }
                         }
-                        if (filterStatus !== 'All') {
-                            const matchingGoal = project.goals.find(g => g.status === filterStatus);
-                            if (matchingGoal) {
-                                selectedGoal = matchingGoal;
-                                project.goals.forEach(goal => goal.selected = goal.name === matchingGoal.name);
-                            }
+                        if (filterStatus !== 'All' && selectedGoal.status !== filterStatus) {
+                            return;
                         }
 
                         const projectRow = document.createElement('tr');
@@ -584,19 +595,20 @@
                             <td>${formatDateToEU(project.startDate)}</td>
                             <td>${formatDateToEU(project.endDate)}</td>
                             <td>${project.employees.join(', ')}</td>
-                            <td>${project.comment || 'Нет комментария'}</td>
+                            <td>${project.comments || 'Нет комментариев'}</td>
                             <td>${project.phase || 'Нет фазы'}</td>
                             <td>
-                                <select class="rating" onchange="updateGoalRating('${project.id}', '${selectedGoal.name}', this.value)">
+                                <select class="rating" onchange="updateProjectRating('${project.id}', this.value, 'manager')">
                                     ${Array.from({ length: 11 }, (_, i) => `<option value="${i}" ${i == project.rating ? 'selected' : ''}>${i}</option>`).join('')}
                                 </select>
                             </td>
                             <td>
-                                <select class="customer-rating" onchange="updateCustomerRating('${project.id}', '${selectedGoal.name}', this.value)">
+                                <select class="customer-rating" onchange="updateProjectRating('${project.id}', this.value, 'customer')">
                                     <option value="Нет" ${project.customerRating === "Нет" ? 'selected' : ''}>Нет</option>
                                     ${Array.from({ length: 11 }, (_, i) => `<option value="${i}" ${i == project.customerRating ? 'selected' : ''}>${i}</option>`).join('')}
                                 </select>
                             </td>
+                            <td>${project.budget || 'Не указан'}</td>
                             <td><button class="delete-btn" onclick="deleteProject('${project.id}', 'generation')"><img src="delete.png" alt="Удалить"></button></td>
                         `;
                         tbody.appendChild(projectRow);
@@ -630,7 +642,7 @@
 
         async function updateGoal(projectId, goalName) {
             try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/goal`, {
+                const response = await fetch(`http://localhost:3000/projects/${projectId}/goal`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -651,7 +663,7 @@
 
         async function updateGoalStatus(projectId, goalName, status) {
             try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/status`, {
+                const response = await fetch(`http://localhost:3000/projects/${projectId}/status`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -670,52 +682,33 @@
             }
         }
 
-        async function updateGoalRating(projectId, goalName, rating) {
+        async function updateProjectRating(projectId, rating, ratingType) {
+            console.log(`Updating ${ratingType} rating for project ${projectId} to ${rating}`);
             try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/rating`, {
+                const response = await fetch(`http://localhost:3000/projects/${projectId}/rating`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
-                    body: JSON.stringify({ goalName, rating, type: 'generation', ratingType: 'manager' })
+                    body: JSON.stringify({ ratingType, rating, type: 'generation' })
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to update goal rating');
+                    throw new Error('Failed to update project rating');
                 }
 
+                console.log('Rating updated successfully');
                 loadProjects();
             } catch (error) {
-                console.error('Error updating goal rating:', error);
-            }
-        }
-
-        async function updateCustomerRating(projectId, goalName, rating) {
-            try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/rating`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ goalName, rating, type: 'generation', ratingType: 'customer' })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to update customer rating');
-                }
-
-                loadProjects();
-            } catch (error) {
-                console.error('Error updating customer rating:', error);
+                console.error('Error updating project rating:', error);
             }
         }
 
         async function updateCompletionDate(projectId, date) {
             try {
                 const formattedDate = formatDateFromEU(date);
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/completion-date`, {
+                const response = await fetch(`http://localhost:3000/projects/${projectId}/completion-date`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -736,7 +729,7 @@
 
         async function deleteProject(projectId, type) {
             try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}?type=${type}`, {
+                const response = await fetch(`http://localhost:3000/projects/${projectId}?type=${type}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -782,15 +775,17 @@
                 let totalCalculatedRating = 0;
 
                 employeeProjects.forEach(project => {
-                    const calculatedRating = calculateFinalRating(project.rating, project.customerRating, project.weight);
+                    const managerRating = project.rating !== undefined ? project.rating : 0;
+                    const customerRating = project.customerRating !== undefined ? project.customerRating : "Нет";
+                    const calculatedRating = calculateFinalRating(managerRating, customerRating, project.weight);
                     totalCalculatedRating += parseFloat(calculatedRating);
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${project.name}</td>
                         <td>${project.id}</td>
-                        <td>${project.rating}</td>
-                        <td>${project.customerRating}</td>
+                        <td>${managerRating}</td>
+                        <td>${customerRating}</td>
                         <td>${project.weight}</td>
                         <td>${calculatedRating}</td>
                     `;
@@ -820,6 +815,7 @@
             const finalRating = totalCalculatedRating * multiplier;
             calculatedRatingElem.textContent = finalRating.toFixed(2);
         }
+
     </script>
 </body>
 </html>

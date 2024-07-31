@@ -247,9 +247,9 @@
             </div>
         </div>
         <div id="products-container">
-            <label for="product">Товары/Услуги</label>
+            <label for="product">Тип</label>
             <div class="product-field">
-                <input type="text" class="product-name" placeholder="Товар/Услуга">
+                <input type="text" class="product-name" placeholder="Тип">
                 <input type="number" class="product-cost" placeholder="Стоимость">
                 <button type="button" class="add-btn" onclick="addProduct()">
                     <img src="add.png" alt="Добавить">
@@ -304,7 +304,7 @@
             const currentSelections = Array.from(document.getElementsByClassName('employee')).map(select => select.value);
 
             try {
-              const response = await fetch('http://91.147.92.132:3000/auth/users', {
+                const response = await fetch('http://91.147.92.132:3000/auth/users', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -410,7 +410,7 @@
             const dependencies = document.getElementById('dependency-list').value.split(',').map(dep => dep.trim()).filter(dep => dep);
             const comments = document.getElementById('comments').value.trim();
             const goals = Array.from(document.getElementsByClassName('goal')).map((goal, index) => ({
-                goal: goal.value.trim(),
+                name: goal.value.trim(),
                 deadline: document.getElementsByClassName('goal-deadline')[index].value
             }));
             const products = Array.from(document.getElementsByClassName('product-name')).map((product, index) => ({
@@ -431,11 +431,12 @@
                 weight,
                 employees,
                 deadline,
+                finalCompletionDate: deadline, // Используем deadline для finalCompletionDate
                 type: 'projects'
             };
 
             try {
-              const response = await fetch('http://91.147.92.132:3000/projects', {
+                const response = await fetch('http://91.147.92.132:3000/projects', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -538,6 +539,9 @@
             });
         }
 
+        function cancel() {
+            window.location.href = 'projects.html';
+        }
     </script>
 </body>
 </html>

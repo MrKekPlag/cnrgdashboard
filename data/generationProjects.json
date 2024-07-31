@@ -12,8 +12,8 @@
       "Nurdaulet Zhumabekov"
     ],
     "status": "Запрос",
-    "rating": 0,
-    "customerRating": "Нет",
+    "rating": "6",
+    "customerRating": "4",
     "dependencies": [
       "234929999"
     ],
@@ -22,7 +22,9 @@
         "name": "23423",
         "deadline": "2024-07-19",
         "selected": true,
-        "status": "Ожидание согласования договора"
+        "status": "Запрос",
+        "rating": "2",
+        "customerRating": "1"
       },
       {
         "name": "wqeqwrwq",
@@ -32,5 +34,30 @@
       }
     ],
     "type": "generation"
+  },
+  {
+    "name": "Kkdkkk",
+    "id": "590939095",
+    "employees": [
+      "Nurdaulet Zhumabekov"
+    ],
+    "goals": [
+      {
+        "name": "Asfi21",
+        "deadline": "2024-12-31",
+        "status": "Отклонено",
+        "rating": "2",
+        "customerRating": "1"
+      }
+    ],
+    "dependencies": [],
+    "startDate": "2024-12-31",
+    "endDate": "2025-01-01",
+    "phase": "C",
+    "comments": "comms",
+    "weight": "10",
+    "budget": "5000",
+    "rating": "6",
+    "customerRating": "3"
   }
 ]

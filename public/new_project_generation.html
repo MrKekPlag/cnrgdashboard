@@ -304,7 +304,7 @@
             const currentSelections = Array.from(document.getElementsByClassName('employee')).map(select => select.value);
 
             try {
-              const response = await fetch('http://91.147.92.132:3000/auth/users', {
+                const response = await fetch('http://91.147.92.132:3000/auth/users', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -412,7 +412,7 @@
             const budget = document.getElementById('budget').value.trim();
             const comments = document.getElementById('comments').value.trim();
             const goals = Array.from(document.getElementsByClassName('goal')).map((goal, index) => ({
-                goal: goal.value.trim(),
+                name: goal.value.trim(),
                 deadline: document.getElementsByClassName('goal-deadline')[index].value
             }));
             const weight = document.getElementById('weight').value;
@@ -436,7 +436,7 @@
             };
 
             try {
-              const response = await fetch('http://91.147.92.132:3000/projects', {
+                const response = await fetch('http://91.147.92.132:3000/projects', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

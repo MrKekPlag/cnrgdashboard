@@ -37,8 +37,8 @@
       "Nurdaulet Zhumabekov"
     ],
     "status": "Запрос",
-    "rating": 0,
-    "customerRating": "Нет",
+    "rating": "3",
+    "customerRating": "3",
     "dependencies": [],
     "goals": [
       {
@@ -46,7 +46,7 @@
         "deadline": "2024-07-05",
         "selected": true,
         "status": "В пути",
-        "rating": "5"
+        "rating": "4"
       },
       {
         "name": "gesdlf1",

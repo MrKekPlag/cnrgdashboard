@@ -1,60 +1,29 @@
 [
   {
-    "id": "432433222",
-    "name": "32222222412",
-    "comments": "kommentaryy",
-    "deadline": "2024-07-26",
-    "weight": "10",
-    "employees": [
-      "Nurdaulet Zhumabekov"
-    ],
-    "products": [
-      {
-        "name": "",
-        "cost": ""
-      }
-    ],
-    "status": "Запрос",
-    "rating": "6",
-    "customerRating": "1",
-    "goals": [
-      {
-        "name": "goall2",
-        "deadline": "2024-07-26",
-        "status": "В пути",
-        "customerRating": "6"
-      }
-    ],
-    "dependencies": [
-      "343212428"
-    ],
-    "finalCompletionDate": ""
-  },
-  {
-    "name": "kaw22",
-    "id": "994444443",
+    "name": "Навы",
+    "id": "111119999",
     "employees": [
       "Nurdaulet Zhumabekov"
     ],
     "goals": [
       {
-        "name": "oasd12",
-        "deadline": "2024-08-25",
-        "selected": false,
-        "status": "Запрос",
-        "rating": 0,
-        "customerRating": "Нет"
+        "name": "цле2",
+        "deadline": "2024-12-31",
+        "status": "Запрос"
       }
     ],
     "dependencies": [],
-    "startDate": "2024-08-01",
-    "endDate": "2024-08-30",
-    "phase": "c",
-    "comments": "comms",
+    "comments": "ком",
     "weight": "10",
-    "status": "Запрос",
-    "rating": 0,
-    "customerRating": "Нет",
-    "type": "realizationProjects"
+    "products": [
+      {
+        "name": "10",
+        "cost": "10"
+      }
+    ],
+    "deadline": "2024-12-31",
+    "finalCompletionDate": "2024-12-31",
+    "customerRating": "4",
+    "rating": "6"
   }
 ]
