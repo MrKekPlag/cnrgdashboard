@@ -137,7 +137,7 @@
 
         async function loadStatuses() {
             try {
-                const response = await fetch('/statuses.json', {
+                const response = await fetch('http://91.147.92.132:3000/statuses.json', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -215,7 +215,7 @@
                     statuses.splice(index, 1);
                     console.log('Deleted status:', statusSelect);
 
-                    const response = await fetch(`http://localhost:3000/projects`, {
+                    const response = await fetch(`http://91.147.92.132:3000/projects`, {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         }
@@ -230,7 +230,7 @@
                         });
                     });
 
-                    await fetch('http://localhost:3000/projects', {
+                    await fetch('http://91.147.92.132:3000/projects', {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
@@ -241,7 +241,7 @@
                 }
             }
 
-            const response = await fetch('http://localhost:3000/statuses', {
+            const response = await fetch('http://91.147.92.132:3000/statuses', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -269,7 +269,7 @@
         }
 
         function loadProjects() {
-            fetch('http://localhost:3000/projects/all', {
+            fetch('http://91.147.92.132:3000/projects/all', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -286,7 +286,7 @@
         }
 
         function loadEmployees() {
-            fetch('http://localhost:3000/auth/users', {
+            fetch('http://91.147.92.132:3000/auth/users', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -307,7 +307,7 @@
         function transferProject() {
             const projectId = document.getElementById('project-select').value;
             const newEmployee = document.getElementById('employee-select').value;
-            fetch(`http://localhost:3000/projects/${projectId}/transfer`, {
+            fetch(`http://91.147.92.132:3000/projects/${projectId}/transfer`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -328,7 +328,7 @@
         function addEmployee() {
             const projectId = document.getElementById('project-select').value;
             const newEmployee = document.getElementById('employee-select').value;
-            fetch(`http://localhost:3000/projects/${projectId}/add-employee`, {
+            fetch(`http://91.147.92.132:3000/projects/${projectId}/add-employee`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -349,7 +349,7 @@
         function removeEmployee() {
             const projectId = document.getElementById('project-select').value;
             const employeeToRemove = document.getElementById('employee-select').value;
-            fetch(`http://localhost:3000/projects/${projectId}/remove-employee`, {
+            fetch(`http://91.147.92.132:3000/projects/${projectId}/remove-employee`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

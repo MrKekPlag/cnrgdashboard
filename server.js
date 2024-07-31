@@ -37,6 +37,11 @@ ensureFileExists('./statuses.json', [
 let users = require('./users.json');
 let statuses = require('./statuses.json');
 
+// Маршрут для получения файла statuses.json
+app.get('/statuses.json', (req, res) => {
+    res.sendFile(path.join(__dirname, 'statuses.json'));
+});
+
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
