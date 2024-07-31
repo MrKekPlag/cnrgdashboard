@@ -82,8 +82,8 @@
   {
     "id": 11,
     "firstName": "Денис",
-    "lastName": "Устененко",
-    "username": "ustenenko.d",
+    "lastName": "Устиненко",
+    "username": "ustinenko.d",
     "password": "$2b$10$gfQozVHVlHc3.YrPDTq/c.YhhuXmYt8CuTQSmZ0WyjiI9pBeEK8eq",
     "role": "admin"
   },

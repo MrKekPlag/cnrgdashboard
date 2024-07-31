@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Процессы сотрудников</title>
     <style>
+        /* Стили не изменялись */
         body {
             background-color: #222;
             color: #fff;
@@ -339,7 +340,7 @@
             <div class="dropdown">
                 <button class="dropbtn">Меню</button>
                 <div class="dropdown-content">
-                    <a id="admin-panel-btn" href="admin_panel.html">Админ-Панель</a>
+                    <a href="admin_panel.html">Админ-Панель</a>
                     <a href="projects_realization.html">Проекты Реализации</a>
                     <a href="projects_generation.html">Проекты Генерации</a>
                     <a href="projects.html">Процессы Сотрудников</a>
@@ -393,8 +394,8 @@
             document.getElementById('filter').addEventListener('change', () => loadProjects());
 
             const role = localStorage.getItem('role');
-            if (role !== 'admin') {
-                document.getElementById('admin-panel-btn').style.display = 'none';
+            if (role === 'admin') {
+                document.getElementById('admin-panel-btn').style.display = 'block';
             }
         });
 
@@ -479,20 +480,11 @@
 
                     const matchingGoal = project.goals.find(goal => goal.name && goal.name.toLowerCase().includes(searchQuery));
                     const matchingEmployee = project.employees.find(employee => employee && employee.toLowerCase().includes(searchQuery));
-                    const hasMatchingStatus = filterStatus === 'All' || project.goals.some(goal => {
-                        const statusMatches = goal.status === filterStatus;
-                        if (statusMatches) {
-                            console.log(`Matching project: ${project.name}, Status: ${goal.status}`);
-                        }
-                        return statusMatches;
-                    });
-
                     if (
                         (project.name && project.name.toLowerCase().includes(searchQuery)) ||
                         matchingGoal ||
                         (project.id && project.id.includes(searchQuery)) ||
-                        matchingEmployee &&
-                        hasMatchingStatus
+                        matchingEmployee
                     ) {
                         project.employees.forEach(employee => {
                             if (!employeesProjectsMap[employee]) {
@@ -595,12 +587,12 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="rating" ${localStorage.getItem('role') !== 'admin' ? 'disabled' : ''} onchange="updateProjectRating('${project.id}', this.value, 'manager')">
+                                <select class="rating" onchange="updateProjectRating('${project.id}', this.value, 'manager')">
                                     ${Array.from({ length: 11 }, (_, i) => `<option value="${i}" ${i == project.rating ? 'selected' : ''}>${i}</option>`).join('')}
                                 </select>
                             </td>
                             <td>
-                                <select class="customer-rating" ${localStorage.getItem('role') !== 'admin' ? 'disabled' : ''} onchange="updateProjectRating('${project.id}', this.value, 'customer')">
+                                <select class="customer-rating" onchange="updateProjectRating('${project.id}', this.value, 'customer')">
                                     <option value="Нет" ${project.customerRating === "Нет" ? 'selected' : ''}>Нет</option>
                                     ${Array.from({ length: 11 }, (_, i) => `<option value="${i}" ${i == project.customerRating ? 'selected' : ''}>${i}</option>`).join('')}
                                 </select>
@@ -612,7 +604,7 @@
                             <td>
                                 <input type="date" class="final-completion-date" value="${project.finalCompletionDate ? project.finalCompletionDate.split('-').reverse().join('-') : ''}" onchange="updateFinalCompletionDate('${project.id}', this.value)">
                             </td>
-                            <td><button class="delete-btn" ${localStorage.getItem('role') !== 'admin' ? 'style="display: none;"' : ''} onclick="deleteProject('${project.id}', 'projects')"><img src="delete.png" alt="Удалить"></button></td>
+                            <td><button class="delete-btn" onclick="deleteProject('${project.id}', 'projects')"><img src="delete.png" alt="Удалить"></button></td>
                         `;
                         tbody.appendChild(projectRow);
                     });
@@ -686,7 +678,6 @@
         }
 
         async function updateProjectRating(projectId, rating, ratingType) {
-            console.log(`Updating ${ratingType} rating for project ${projectId} to ${rating}`);
             try {
                 const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/rating`, {
                     method: 'PATCH',
