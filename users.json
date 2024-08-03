@@ -1,130 +1,66 @@
 [
   {
-    "id": 1,
-    "firstName": "Аскар",
-    "lastName": "Даукенов",
-    "username": "daukenov.a",
-    "password": "$2b$10$uqz8p/QE5tNUIqfCpK5IpuHc1YWQJmrzldal5FZo41NvhqS1iXaDi",
+    "id": 4,
+    "firstName": "Nurdaulet",
+    "lastName": "Zhumabekov",
+    "username": "zhumabekov.nurdaulet",
+    "password": "$2b$10$vFFoCgws5gh8dXpK1Sq58uqGA2mp4DcySfoG.M5ZCs2ZSv/euVvEa",
     "role": "admin"
   },
   {
     "id": 2,
-    "firstName": "Юля",
-    "lastName": "Берникова",
-    "username": "bernikova.u",
-    "password": "$2b$10$niQ/zboC4x/c4ZcPQiTse.Ct64HqEUSaPj2M.Z1d8F1c/3PqPXm1G",
-    "role": "user"
+    "firstName": "Denis",
+    "lastName": "Denis",
+    "username": "denis",
+    "password": "$2b$10$x7oS9RU/fmK1CJ.Rbi5SU.xJvDApk2Tb5zRfe7mAF6A6aCFgDq/xW",
+    "role": "admin"
   },
   {
     "id": 3,
-    "firstName": "Елена",
-    "lastName": "Шабалина",
-    "username": "shabalina.e",
-    "password": "$2b$10$DdK1O/TCKBvvRZh.oGn1y.zyQCeA5gbZGfPNktXOBtl7K.7bKz7dK",
+    "firstName": "Employee",
+    "lastName": "Zhumabekov",
+    "username": "1234",
+    "password": "$2b$10$aaqRdcid/lbHELjhULlxQ.BboCTCEUX6UM3e0LRafoCKKbSzKpVgq",
     "role": "user"
   },
   {
     "id": 4,
-    "firstName": "Георгий",
-    "lastName": "Ризаев",
-    "username": "rizayev.g",
-    "password": "$2b$10$9IO7duYX1/v2THhFP/0C0OJq2YkROKFxIsFO7ZzD8TkfRt5vBdDDK",
-    "role": "user"
+    "firstName": "Askar",
+    "lastName": "Askar",
+    "username": "askar",
+    "password": "$2b$10$m539DhvgDSf1AS0EENi3p.JTL6a0o.MDf56C1qK3HpgBNjfbzj1Pm",
+    "role": "admin"
   },
   {
     "id": 5,
-    "firstName": "Кирилл",
-    "lastName": "Никитин",
-    "username": "nikitin.k",
-    "password": "$2b$10$B94ZrZK9T16gygWcUopQ5OlPrZekhtIEhfmeA6i4Hb7yP64Il4fCa",
+    "firstName": "Юля",
+    "lastName": "Берникова",
+    "username": "yulya.bernikova",
+    "password": "$2b$10$sLa23lHjaAV8/nQfk/XfF.FdnAnWbgOxPf3LbmStTYo/9H71sn/T6",
     "role": "user"
   },
   {
     "id": 6,
-    "firstName": "Зарина",
-    "lastName": "Букенова",
-    "username": "bukenova.z",
-    "password": "$2b$10$cu.J2GqO4ykll5DZFT/ntuv9plZK1G9N5CakKHjDe2hl/I.bCCeLy",
+    "firstName": "Employee 5",
+    "lastName": "Pak",
+    "username": "manager",
+    "password": "$2b$10$Kj2VCGhRKqWO8741G9xr6.096M/HZF1TBmVrm9TtDTeF0WKRSRM0q",
     "role": "user"
   },
   {
     "id": 7,
     "firstName": "Юрий",
     "lastName": "Тюленев",
-    "username": "tyulenev.u",
-    "password": "$2b$10$p4eUVGHNifV7p.8NWv1r.ePwtLOvcWhpfMNYIazCdW1HvU5DxiDgG",
+    "username": "ЮРИТ",
+    "password": "$2b$10$uoKGtInoRRLeWac64ToGfe2b1JrND3AJEeAUpVA/K0088gAkq3BLS",
     "role": "user"
   },
   {
     "id": 8,
-    "firstName": "Рахимжан",
-    "lastName": "Зияров",
-    "username": "ziyarov.r",
-    "password": "$2b$10$2tclZlWfjjP5GynfgduW8e.b8/BuXrs.0hAg.D.RkYzq3A1T9Vsbm",
-    "role": "admin"
-  },
-  {
-    "id": 9,
-    "firstName": "Нуржан",
-    "lastName": "Джаканов",
-    "username": "jakanov.n",
-    "password": "$2b$10$WqAkW5sJ0TgXeKZ5zFAKGePPZSBhTP7/vVYH7mT3k8K31ItnYYoXa",
+    "firstName": "Анатолий ",
+    "lastName": "Куликов",
+    "username": "",
+    "password": "$2b$10$9fIj7zNw6rpQibXs15xgguKaVHa7etksX1uTcFxpCRm/ai.CVK28q",
     "role": "user"
-  },
-  {
-    "id": 10,
-    "firstName": "Роман",
-    "lastName": "Комаров",
-    "username": "komarov.r",
-    "password": "$2b$10$9hYO9MXwqTmR3k3nnQaKeebXQ2mlJEdLh6c6niSpFAdqFP/88FDV.",
-    "role": "user"
-  },
-  {
-    "id": 11,
-    "firstName": "Денис",
-    "lastName": "Устиненко",
-    "username": "ustinenko.d",
-    "password": "$2b$10$gfQozVHVlHc3.YrPDTq/c.YhhuXmYt8CuTQSmZ0WyjiI9pBeEK8eq",
-    "role": "admin"
-  },
-  {
-    "id": 12,
-    "firstName": "Александр",
-    "lastName": "Филинков",
-    "username": "filinkov.a",
-    "password": "$2b$10$1H0TocpI/REkjVgZRnqOE.R/2DaqH2KtyNh1phY8CI8NjOa5fw69e",
-    "role": "user"
-  },
-  {
-    "id": 13,
-    "firstName": "Надежда",
-    "lastName": "Аралова",
-    "username": "aralova.n",
-    "password": "$2b$10$KjTi34op7hU/XN7ezQuGxuho7Ujqm8mA7SBlDTEmUG0Uu89w/PhqW",
-    "role": "user"
-  },
-  {
-    "id": 14,
-    "firstName": "Максим",
-    "lastName": "Аралов",
-    "username": "aralov.m",
-    "password": "$2b$10$hgQvXhJQGBK0MdyC98xNAO/kf6eSn.IJ2VRb8mfOfPbsI74q7OtfW",
-    "role": "user"
-  },
-  {
-    "id": 15,
-    "firstName": "Анатолий",
-    "lastName": "Кульков",
-    "username": "kulkov.a",
-    "password": "$2b$10$vnGhUtOU5/oUd2C/Z37aBevPR8iE4/ufHBDMYKQRPXEa3FTKHphC6",
-    "role": "user"
-  },
-  {
-    "id": 16,
-    "firstName": "Nurdaulet",
-    "lastName": "Zhumabekov",
-    "username": "zhumabekov.nurdaulet",
-    "password": "$2b$10$vFFoCgws5gh8dXpK1Sq58uqGA2mp4DcySfoG.M5ZCs2ZSv/euVvEa",
-    "role": "admin"
   }
 ]

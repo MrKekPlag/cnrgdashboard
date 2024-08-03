@@ -338,7 +338,7 @@
                     <a href="projects_realization.html">Проекты Реализации</a>
                     <a href="projects_generation.html">Проекты Генерации</a>
                     <a href="projects.html">Процессы Сотрудников</a>
-                    <a href="index.html">Выйти</a>
+                    <a href="logout.html">Выйти</a>
                 </div>
             </div>
         </div>
@@ -727,6 +727,28 @@
             }
         }
 
+        async function updateFinalCompletionDate(projectId, date) {
+            try {
+                const formattedDate = date.split('-').reverse().join('-');
+                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/final-completion-date`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ date: formattedDate, type: 'generation' })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update final completion date');
+                }
+
+                loadProjects();
+            } catch (error) {
+                console.error('Error updating final completion date:', error);
+            }
+        }
+
         async function deleteProject(projectId, type) {
             try {
                 const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}?type=${type}`, {
@@ -815,7 +837,6 @@
             const finalRating = totalCalculatedRating * multiplier;
             calculatedRatingElem.textContent = finalRating.toFixed(2);
         }
-
     </script>
 </body>
 </html>

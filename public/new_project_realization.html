@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создать новый проект реализации</title>
+    <title>Создать новый проект генерации</title>
     <style>
         body {
             background-color: #222;
@@ -226,9 +226,9 @@
     </style>
 </head>
 <body>
-    <a href="projects_realization.html" class="logo"><img src="cnrg.png" alt="C-NRG Logo" width="150"></a>
+    <a href="projects_generation.html" class="logo"><img src="cnrg.png" alt="C-NRG Logo" width="150"></a>
     <div class="form-container">
-        <h1>Создать новый проект реализации</h1>
+        <h1>Создать новый проект генерации</h1>
         <label for="project-id">ID проекта</label>
         <input type="text" id="project-id" placeholder="ID проекта" maxlength="9" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
         <label for="project-name">Название процесса</label>
@@ -432,11 +432,8 @@
                 employees,
                 startDate,
                 endDate,
-                type: 'realization'
+                type: 'generation'
             };
-
-            // Логирование данных перед отправкой
-            console.log('Отправляемые данные проекта:', project);
 
             try {
                 const response = await fetch('http://91.147.92.132:3000/projects', {
@@ -453,10 +450,10 @@
                 }
 
                 const createdProject = await response.json();
-                localStorage.setItem('realizationProjects', JSON.stringify([...JSON.parse(localStorage.getItem('realizationProjects') || '[]'), createdProject]));
+                localStorage.setItem('generationProjects', JSON.stringify([...JSON.parse(localStorage.getItem('generationProjects') || '[]'), createdProject]));
 
                 alert('Проект успешно создан!');
-                window.location.href = 'projects_realization.html';
+                window.location.href = 'projects_generation.html';
             } catch (error) {
                 console.error('Ошибка при создании проекта:', error);
                 alert('Ошибка при создании проекта: ' + error.message);
@@ -542,6 +539,9 @@
             });
         }
 
+        function cancel() {
+            window.location.href = 'projects_generation.html';
+        }
     </script>
 </body>
 </html>

@@ -37,11 +37,6 @@ ensureFileExists('./statuses.json', [
 let users = require('./users.json');
 let statuses = require('./statuses.json');
 
-// Маршрут для получения файла statuses.json
-app.get('/statuses.json', (req, res) => {
-    res.sendFile(path.join(__dirname, 'statuses.json'));
-});
-
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -103,38 +98,6 @@ app.delete('/auth/delete', authenticateToken, authorizeRole('admin'), (req, res)
     res.status(200).send('User deleted successfully');
 });
 
-app.delete('/projects/:id', authenticateToken, (req, res) => {
-    try {
-        const { id } = req.params;
-        const type = req.query.type;
-
-        if (!type) {
-            console.error('Type is required');
-            return res.status(400).send('Type is required');
-        }
-
-        let projects = readProjects(type);
-        const projectIndex = projects.findIndex(p => p.id === id);
-        if (projectIndex === -1) {
-            console.error('Project not found');
-            return res.status(404).send('Project not found');
-        }
-
-        projects.splice(projectIndex, 1);
-        writeProjects(type, projects);
-
-        res.status(200).send({ message: 'Project deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting project:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-app.get('/auth/users', authenticateToken, (req, res) => {
-    const userList = users.map(user => ({ firstName: user.firstName, lastName: user.lastName }));
-    res.json(userList);
-});
-
 function readProjects(type) {
     let filePath = path.join(__dirname, 'data', 'projects.json');
     if (type === 'generation') {
@@ -147,6 +110,7 @@ function readProjects(type) {
         console.log(`Reading projects from ${filePath}`);
         return JSON.parse(data);
     }
+    console.log(`File not found: ${filePath}`);
     return [];
 }
 
@@ -162,6 +126,7 @@ function writeProjects(type, projects) {
 }
 
 function createNewProjectTemplate(projectData, type) {
+    console.log('Creating project template with data:', projectData);
     const { name, id, employees, goals, dependencies, startDate, endDate, phase, comments, weight, status, products, budget, deadline } = projectData;
 
     const baseProject = {
@@ -176,8 +141,8 @@ function createNewProjectTemplate(projectData, type) {
             customerRating: goal.customerRating || "Нет"
         })),
         dependencies,
-        startDate,
-        endDate,
+        startDate: type === 'projects' ? "0000-00-00" : startDate,
+        endDate: type === 'projects' ? "0000-00-00" : endDate,
         phase,
         comments,
         weight,
@@ -200,9 +165,105 @@ function createNewProjectTemplate(projectData, type) {
     return baseProject;
 }
 
+function updateDependenciesForProject(newProjectId, dependencies) {
+    console.log('Updating dependencies for project:', newProjectId, dependencies);
+    dependencies.forEach(depId => {
+        let dependencyType;
+        if (depId.startsWith('gen')) {
+            dependencyType = 'generation';
+        } else if (depId.startsWith('real')) {
+            dependencyType = 'realization';
+        } else {
+            dependencyType = 'projects';
+        }
+
+        const depProjects = readProjects(dependencyType);
+        const dependentProject = depProjects.find(project => project.id === depId);
+        if (dependentProject) {
+            if (!dependentProject.dependencies.includes(newProjectId)) {
+                dependentProject.dependencies.push(newProjectId);
+            }
+            writeProjects(dependencyType, depProjects);
+            console.log(`Updated dependencies for project ${depId}:`, dependentProject.dependencies);
+        } else {
+            console.error(`Dependent project not found: ${depId}`);
+        }
+    });
+}
+
+app.post('/projects', authenticateToken, (req, res, next) => {
+    const { name, id, employees, goals, dependencies, startDate, endDate, phase, comments, weight, status, products, budget, deadline, type } = req.body;
+
+    console.log('Received project data:', req.body);
+
+    const missingFields = [];
+    if (!name) missingFields.push('name');
+    if (!id) missingFields.push('id');
+    if (!employees || employees.length === 0) missingFields.push('employees');
+    if (!goals || goals.length === 0) missingFields.push('goals');
+    if (!type) missingFields.push('type');
+    if (type !== 'projects') {
+        if (!startDate) missingFields.push('startDate');
+        if (!endDate) missingFields.push('endDate');
+    } else {
+        req.body.startDate = "0000-00-00";
+        req.body.endDate = "0000-00-00";
+    }
+    if (missingFields.length > 0) {
+        console.error('Missing required fields:', missingFields);
+        return res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
+    }
+
+    const projectData = {
+        name,
+        id,
+        employees,
+        goals,
+        dependencies,
+        startDate: req.body.startDate,
+        endDate: req.body.endDate,
+        phase,
+        comments,
+        weight,
+        status,
+        type,
+        products,
+        budget,
+        deadline
+    };
+
+    console.log('Creating new project with data:', projectData);
+
+    const newProject = createNewProjectTemplate(projectData, type);
+
+    try {
+        let projects = readProjects(type);
+        console.log('Existing projects:', projects);
+        projects.push(newProject);
+        writeProjects(type, projects);
+        console.log('Project saved successfully:', newProject);
+
+        if (dependencies && dependencies.length > 0) {
+            console.log('Updating dependencies for project:', id);
+            updateDependenciesForProject(id, dependencies);
+        }
+
+        res.status(201).send(newProject);
+    } catch (error) {
+        console.error('Error saving project:', error);
+        next(error);
+    }
+});
+
 app.get('/projects', authenticateToken, (req, res) => {
-    const projects = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'projects.json')));
-    res.json(projects);
+    try {
+        let projects = readProjects('projects');
+        console.log('Returning projects:', projects);
+        res.json(projects);
+    } catch (error) {
+        console.error('Error loading projects:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.get('/projects/generation', authenticateToken, (req, res) => {
@@ -228,85 +289,40 @@ app.get('/projects/realization', authenticateToken, (req, res) => {
 });
 
 app.get('/projects/all', authenticateToken, (req, res) => {
-    let allProjects = readProjects('projects')
-        .concat(readProjects('generation'))
-        .concat(readProjects('realization'));
-    res.json(allProjects);
+    const generationProjects = readProjects('generation');
+    const realizationProjects = readProjects('realization');
+    const projects = generationProjects.concat(realizationProjects);
+    res.json(projects);
 });
 
-app.post('/createProjectFile', authenticateToken, (req, res) => {
-    const projectData = req.body;
-
-    let projectsFile = 'projects';
-    if (projectData.type === 'generation') {
-        projectsFile = 'generationProjects';
-    } else if (projectData.type === 'realization') {
-        projectsFile = 'realizationProjects';
-    }
-
-    const projectsPath = path.join(__dirname, `./data/${projectsFile}.json`);
-
-    ensureFileExists(projectsPath, []);
-
-    res.json({ message: 'File created successfully' });
-});
-
-app.post('/projects', authenticateToken, (req, res) => {
-    const { name, id, employees, goals, dependencies, startDate, endDate, phase, comments, weight, status, products, budget, deadline, type } = req.body;
-
-    // Логирование полученных данных для отладки
-    console.log('Received project data:', req.body);
-
-    // Валидация обязательных полей
-    const missingFields = [];
-    if (!name) missingFields.push('name');
-    if (!id) missingFields.push('id');
-    if (!employees || employees.length === 0) missingFields.push('employees');
-    if (!goals || goals.length === 0) missingFields.push('goals');
-    if (!type) missingFields.push('type');
-    if (!startDate) missingFields.push('startDate');
-    if (!endDate) missingFields.push('endDate');
-    if (missingFields.length > 0) {
-        console.error('Missing required fields:', missingFields);
-        return res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
-    }
-
-    const projectData = {
-        name,
-        id,
-        employees,
-        goals,
-        dependencies,
-        startDate,
-        endDate,
-        phase,
-        comments,
-        weight,
-        status,
-        type,
-        products,
-        budget,
-        deadline
-    };
-
-    const newProject = createNewProjectTemplate(projectData, type);
-
-    console.log('Creating new project:', newProject);
+app.patch('/projects/update-dependencies', authenticateToken, (req, res) => {
+    const { newProjectId, dependencies } = req.body;
 
     try {
-        let projects = readProjects(type);
-        projects.push(newProject);
-        console.log(`Projects before saving: ${JSON.stringify(projects, null, 2)}`);
-        writeProjects(type, projects);
-        console.log('Project saved successfully.');
+        dependencies.forEach(depId => {
+            let dependencyType = 'projects';
+            if (depId.startsWith('gen')) {
+                dependencyType = 'generation';
+            } else if (depId.startsWith('real')) {
+                dependencyType = 'realization';
+            }
 
-        if (dependencies && dependencies.length > 0) {
-            updateDependenciesForProject(id, dependencies);
-        }
+            const projects = readProjects(dependencyType);
+            const project = projects.find(p => p.id === depId);
+            if (project) {
+                if (!project.dependencies.includes(newProjectId)) {
+                    project.dependencies.push(newProjectId);
+                }
+                writeProjects(dependencyType, projects);
+                console.log(`Updated dependencies for project ${depId}:`, project.dependencies);
+            } else {
+                console.error(`Project not found: ${depId}`);
+            }
+        });
 
-        res.status(201).send(newProject);
+        res.status(200).send('Dependencies updated successfully');
     } catch (error) {
-        console.error('Error saving project:', error);
+        console.error('Error updating dependencies:', error);
         res.status(500).send('Internal Server Error');
     }
 });
@@ -512,27 +528,9 @@ app.delete('/projects/:id', authenticateToken, (req, res) => {
     res.status(200).send('Project deleted successfully');
 });
 
-app.get('/projects/generation', authenticateToken, (req, res) => {
-    try {
-        let generationProjects = readProjects('generation');
-        console.log('Returning generation projects:', generationProjects);
-        res.json(generationProjects);
-    } catch (error) {
-        console.error('Error loading generation projects:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-app.get('/projects/realization', authenticateToken, (req, res) => {
-    const projects = readProjects('realization');
-    res.json(projects);
-});
-
-app.get('/projects/all', authenticateToken, (req, res) => {
-    const generationProjects = readProjects('generation');
-    const realizationProjects = readProjects('realization');
-    const projects = generationProjects.concat(realizationProjects);
-    res.json(projects);
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).send('Internal Server Error');
 });
 
 app.listen(port, () => {
