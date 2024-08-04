@@ -489,7 +489,7 @@
                 localStorage.setItem('projects', JSON.stringify([...JSON.parse(localStorage.getItem('projects') || '[]'), createdProject]));
 
                 // Обновление зависимостей
-                updateProjectDependencies(project.id, dependencies);
+                await updateProjectDependencies(project.id, dependencies);
 
                 alert('Проект успешно создан!');
                 window.location.href = 'projects.html';
