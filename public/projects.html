@@ -399,7 +399,7 @@
 
         async function loadStatuses() {
             try {
-                const response = await fetch('http://91.147.92.132:3000/statuses', {
+                const response = await fetch('http://localhost:3000/statuses', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -445,7 +445,7 @@
 
         async function loadProjects() {
             try {
-                const response = await fetch('http://91.147.92.132:3000/projects', {
+                const response = await fetch('http://localhost:3000/projects', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -635,7 +635,7 @@
 
         async function updateGoal(projectId, goalName) {
             try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/goal`, {
+                const response = await fetch(`http://localhost:3000/projects/${projectId}/goal`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -656,7 +656,7 @@
 
         async function updateGoalStatus(projectId, goalName, status) {
             try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/status`, {
+                const response = await fetch(`http://localhost:3000/projects/${projectId}/status`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -677,7 +677,7 @@
 
         async function updateProjectRating(projectId, rating, ratingType) {
             try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/rating`, {
+                const response = await fetch(`http://localhost:3000/projects/${projectId}/rating`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -699,7 +699,7 @@
         async function updateCompletionDate(projectId, date) {
             try {
                 const formattedDate = formatDateFromEU(date);
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/completion-date`, {
+                const response = await fetch(`http://localhost:3000/projects/${projectId}/completion-date`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -721,7 +721,7 @@
         async function updateFinalCompletionDate(projectId, date) {
             try {
                 const formattedDate = date.split('-').reverse().join('-');
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/final-completion-date`, {
+                const response = await fetch(`http://localhost:3000/projects/${projectId}/final-completion-date`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -742,7 +742,7 @@
 
         async function deleteProject(projectId, type) {
             try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}?type=${type}`, {
+                const response = await fetch(`http://localhost:3000/projects/${projectId}?type=${type}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -765,7 +765,7 @@
 
         async function openRatingMatrix(employeeName) {
             try {
-                const response = await fetch('http://91.147.92.132:3000/projects/all', {
+                const response = await fetch('http://localhost:3000/projects/all', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }

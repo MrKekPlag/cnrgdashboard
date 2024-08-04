@@ -172,25 +172,23 @@ function createNewProjectTemplate(projectData, type) {
 function updateDependenciesForProject(newProjectId, dependencies) {
     console.log('Updating dependencies for project:', newProjectId, dependencies);
     dependencies.forEach(depId => {
-        let dependencyType;
+        let dependencyType = 'projects';
         if (depId.startsWith('gen')) {
             dependencyType = 'generation';
         } else if (depId.startsWith('real')) {
             dependencyType = 'realization';
-        } else {
-            dependencyType = 'projects';
         }
 
-        const depProjects = readProjects(dependencyType);
-        const dependentProject = depProjects.find(project => project.id === depId);
-        if (dependentProject) {
-            if (!dependentProject.dependencies.includes(newProjectId)) {
-                dependentProject.dependencies.push(newProjectId);
+        const projects = readProjects(dependencyType);
+        const project = projects.find(p => p.id === depId);
+        if (project) {
+            if (!project.dependencies.includes(newProjectId)) {
+                project.dependencies.push(newProjectId);
             }
-            writeProjects(dependencyType, depProjects);
-            console.log(`Updated dependencies for project ${depId}:`, dependentProject.dependencies);
+            writeProjects(dependencyType, projects);
+            console.log(`Updated dependencies for project ${depId}:`, project.dependencies);
         } else {
-            console.error(`Dependent project not found: ${depId}`);
+            console.error(`Project not found: ${depId}`);
         }
     });
 }
@@ -292,13 +290,20 @@ app.get('/projects/realization', authenticateToken, (req, res) => {
     }
 });
 
+// Добавленный маршрут для получения всех проектов
 app.get('/projects/all', authenticateToken, (req, res) => {
-    const generationProjects = readProjects('generation');
-    const realizationProjects = readProjects('realization');
-    const projects = generationProjects.concat(realizationProjects);
-    res.json(projects);
+    try {
+        const projects = readProjects('projects');
+        const generationProjects = readProjects('generation');
+        const realizationProjects = readProjects('realization');
+        res.json({ projects, generationProjects, realizationProjects });
+    } catch (error) {
+        console.error('Error loading all projects:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
+// Исправленный маршрут для обновления зависимостей
 app.patch('/projects/update-dependencies', authenticateToken, (req, res) => {
     const { newProjectId, dependencies } = req.body;
 
@@ -417,126 +422,14 @@ app.patch('/projects/:id/completion-date', authenticateToken, (req, res) => {
         return res.status(404).json({ error: 'Project not found' });
     }
 
-    project.deadline = date;
-
-    try {
-        writeProjects(type, projects);
-        console.log(`Completion date updated successfully for project ${projectId}`);
-        res.json({ message: 'Completion date updated successfully' });
-    } catch (err) {
-        console.error('Error writing to file:', err);
-        res.status(500).json({ error: 'Failed to update completion date' });
-    }
-});
-
-app.patch('/projects/:id/final-completion-date', authenticateToken, (req, res) => {
-    const projectId = req.params.id;
-    const { date, type } = req.body;
-
-    console.log(`Updating final completion date for project ${projectId} of type ${type} to ${date}`);
-
-    let projects = readProjects(type);
-
-    const project = projects.find(p => p.id === projectId);
-    if (!project) {
-        console.error('Project not found:', projectId);
-        return res.status(404).json({ error: 'Project not found' });
-    }
-
     project.finalCompletionDate = date;
 
-    try {
-        writeProjects(type, projects);
-        console.log(`Final completion date updated successfully for project ${projectId}`);
-        res.json({ message: 'Final completion date updated successfully' });
-    } catch (err) {
-        console.error('Error writing to file:', err);
-        res.status(500).json({ error: 'Failed to update final completion date' });
-    }
-});
-
-app.patch('/projects/:id/goal', authenticateToken, (req, res) => {
-    const { id } = req.params;
-    const { goalName, type } = req.body;
-
-    if (!type) {
-        return res.status(400).send('Type is required');
-    }
-
-    let projects = readProjects(type);
-    let project = projects.find(p => p.id === id);
-
-    if (!project) {
-        return res.status(404).send('Project not found');
-    }
-
-    project.goals.forEach(goal => goal.selected = goal.name === goalName);
-
     writeProjects(type, projects);
-    res.status(200).send('Goal updated successfully');
-});
 
-app.patch('/projects/:id/transfer', authenticateToken, (req, res) => {
-    const { id } = req.params;
-    const { newEmployee } = req.body;
-
-    let projects = readProjects('projects');
-    let project = projects.find(p => p.id === id);
-
-    if (!project) {
-        return res.status(404).send('Project not found');
-    }
-
-    project.employees = [newEmployee];
-    writeProjects('projects', projects);
-
-    res.status(200).send('Project transferred successfully');
-});
-
-app.patch('/projects/:id/add-employee', authenticateToken, (req, res) => {
-    const { id } = req.params;
-    const { employee, type } = req.body;
-
-    if (!type) {
-        return res.status(400).send('Type is required');
-    }
-
-    let projects = readProjects(type);
-    let project = projects.find(p => p.id === id);
-
-    if (!project) {
-        return res.status(404).send('Project not found');
-    }
-
-    if (!project.employees.includes(employee)) {
-        project.employees.push(employee);
-    }
-
-    writeProjects(type, projects);
-    res.status(200).send('Employee added successfully');
-});
-
-app.delete('/projects/:id', authenticateToken, (req, res) => {
-    const { id } = req.params;
-    const { type } = req.query;
-
-    if (!type) {
-        return res.status(400).send('Type is required');
-    }
-
-    let projects = readProjects(type);
-    const updatedProjects = projects.filter(p => p.id !== id);
-
-    writeProjects(type, updatedProjects);
-
-    res.status(200).send('Project deleted successfully');
-});
-
-app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
-    res.status(500).send('Internal Server Error');
+    console.log(`Updated project completion date for project ${projectId} to ${date}`);
+    res.json(project);
 });
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}/`);
+    console.log(`Server is running on port ${port}`);
 });

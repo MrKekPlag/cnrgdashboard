@@ -25,5 +25,37 @@
     "finalCompletionDate": "2024-12-31",
     "customerRating": "4",
     "rating": "6"
+  },
+  {
+    "name": "e.sdasdaw",
+    "id": "000000012",
+    "employees": [
+      "Nurdaulet Zhumabekov"
+    ],
+    "goals": [
+      {
+        "name": "wsad",
+        "deadline": "2024-12-31",
+        "status": "",
+        "rating": 0,
+        "customerRating": "Нет"
+      }
+    ],
+    "dependencies": [
+      "590939095"
+    ],
+    "startDate": "0000-00-00",
+    "endDate": "0000-00-00",
+    "comments": "ascssdk;a",
+    "weight": "10",
+    "products": [
+      {
+        "name": "edas",
+        "cost": "10"
+      }
+    ],
+    "deadline": "2024-12-31",
+    "finalCompletionDate": "2024-12-31",
+    "rating": "0"
   }
 ]

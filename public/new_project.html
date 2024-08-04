@@ -502,13 +502,16 @@
         async function updateProjectDependencies(newProjectId, dependencies) {
             console.log('Updating dependencies for project:', newProjectId, dependencies);
             try {
+                const requestBody = JSON.stringify({ newProjectId, dependencies });
+                console.log('Request body:', requestBody);
+
                 const response = await fetch(`http://91.147.92.132:3000/projects/update-dependencies`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
-                    body: JSON.stringify({ newProjectId, dependencies })
+                    body: requestBody
                 });
 
                 if (!response.ok) {
@@ -535,6 +538,8 @@
         async function populateDependencyList() {
             try {
                 const token = localStorage.getItem('token');
+
+                // Загрузить все проекты (projects, generation и realization)
                 const response = await fetch('http://91.147.92.132:3000/projects/all', {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -545,11 +550,14 @@
                     throw new Error('Failed to load projects');
                 }
 
-                const projects = await response.json();
+                const allProjects = await response.json();
+                const { projects, generationProjects, realizationProjects } = allProjects;
+
+                const combinedProjects = [...projects, ...generationProjects, ...realizationProjects];
                 const dependencyListContainer = document.getElementById('dependency-list-container');
                 dependencyListContainer.innerHTML = '';
 
-                projects.forEach(project => {
+                combinedProjects.forEach(project => {
                     const div = document.createElement('div');
                     div.textContent = project.id;
                     div.onclick = () => {
