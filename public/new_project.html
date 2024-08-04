@@ -500,6 +500,7 @@
         }
 
         async function updateProjectDependencies(newProjectId, dependencies) {
+            console.log('Updating dependencies for project:', newProjectId, dependencies);
             try {
                 const response = await fetch(`http://91.147.92.132:3000/projects/update-dependencies`, {
                     method: 'PATCH',
