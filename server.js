@@ -98,6 +98,10 @@ app.delete('/auth/delete', authenticateToken, authorizeRole('admin'), (req, res)
     res.status(200).send('User deleted successfully');
 });
 
+app.get('/auth/users', authenticateToken, (req, res) => {
+    res.json(users);
+});
+
 function readProjects(type) {
     let filePath = path.join(__dirname, 'data', 'projects.json');
     if (type === 'generation') {
