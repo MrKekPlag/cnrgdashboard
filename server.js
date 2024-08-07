@@ -13,7 +13,7 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const SECRET_KEY = 'your-secret-key';
+const SECRET_KEY = 'your-secret-key'; // Добавлено определение SECRET_KEY
 
 const ensureFileExists = (filePath, defaultContent) => {
     if (!fs.existsSync(filePath)) {
@@ -87,31 +87,23 @@ app.post('/auth/register', (req, res) => {
     res.json({ accessToken, role: user.role, firstName: user.firstName, lastName: user.lastName });
 });
 
-app.delete('/auth/delete', (req, res) => {
-    const token = req.headers['authorization'].split(' ')[1];
-    jwt.verify(token, secretKey, (err, decoded) => {
-        if (err) {
-            return res.status(403).send('Invalid token');
-        }
+app.delete('/auth/delete', authenticateToken, (req, res) => {
+    const { username } = req.body;
+    const userIndex = users.findIndex(user => user.username === username);
 
-        const { username } = req.body;
-        let users = JSON.parse(fs.readFileSync(usersFilePath, 'utf-8'));
-        const userIndex = users.findIndex(user => user.username === username);
+    if (userIndex === -1) {
+        return res.status(404).send('User not found');
+    }
 
-        if (userIndex === -1) {
-            return res.status(404).send('User not found');
-        }
+    // Проверка, если удаление не администратора или текущего пользователя
+    if (users[userIndex].role === 'admin') {
+        return res.status(403).send('Cannot delete admin user');
+    }
 
-        // Проверка, если удаление не администратора или текущего пользователя
-        if (users[userIndex].role === 'admin') {
-            return res.status(403).send('Cannot delete admin user');
-        }
+    users = users.filter(user => user.username !== username);
+    fs.writeFileSync('./users.json', JSON.stringify(users, null, 2));
 
-        users = users.filter(user => user.username !== username);
-        fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
-
-        res.send('User deleted successfully');
-    });
+    res.send('User deleted successfully');
 });
 
 app.get('/auth/users', authenticateToken, (req, res) => {
