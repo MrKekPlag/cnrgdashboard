@@ -62,38 +62,30 @@
         <button onclick="deleteUser()">Delete User</button>
     </div>
     <script>
-        async function deleteUser() {
-            const username = document.getElementById('username').value;
+    async function deleteUser() {
+        const username = document.getElementById('username').value;
 
-            try {
-                const response = await fetch('http://91.147.92.132:3000/auth/delete', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ username })
-                });
+        try {
+            const response = await fetch('http://91.147.92.132:3000/auth/delete', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ username })
+            });
 
-                if (response.ok) {
-                    alert('User deleted successfully');
-                    // Optionally, remove user from localStorage if necessary
-                    const currentUser = localStorage.getItem('username');
-                    if (currentUser === username) {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('role');
-                        localStorage.removeItem('username');
-                        localStorage.removeItem('firstName');
-                        localStorage.removeItem('lastName');
-                    }
-                    window.location.href = 'projects.html';
-                } else {
-                    throw new Error('User deletion failed');
-                }
-            } catch (error) {
-                alert('Error deleting user: ' + error.message);
+            if (response.ok) {
+                alert('User deleted successfully');
+            } else {
+                const errorText = await response.text();
+                alert(`Error deleting user: ${errorText}`);
             }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Error deleting user: ${error.message}`);
         }
+    }
     </script>
 </body>
 </html>
