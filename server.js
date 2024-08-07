@@ -128,6 +128,7 @@ function writeProjects(type, projects) {
     console.log(`Writing projects to ${filePath}`);
     fs.writeFileSync(filePath, JSON.stringify(projects, null, 2));
 }
+
 function createNewProjectTemplate(projectData, type) {
     console.log('Creating project template with data:', projectData);
     const { name, id, employees, goals, dependencies, startDate, endDate, phase, comments, weight, status, products, budget, deadline } = projectData;
@@ -316,14 +317,38 @@ app.get('/projects/realization', authenticateToken, (req, res) => {
 
 app.get('/projects/all', authenticateToken, (req, res) => {
     try {
-        const projects = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'projects.json')));
-        const generationProjects = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'generationProjects.json')));
-        const realizationProjects = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'realizationProjects.json')));
+        const projectsPath = path.join(__dirname, 'data', 'projects.json');
+        const generationProjectsPath = path.join(__dirname, 'data', 'generationProjects.json');
+        const realizationProjectsPath = path.join(__dirname, 'data', 'realizationProjects.json');
+
+        const projects = JSON.parse(fs.readFileSync(projectsPath));
+        const generationProjects = JSON.parse(fs.readFileSync(generationProjectsPath));
+        const realizationProjects = JSON.parse(fs.readFileSync(realizationProjectsPath));
+
+        // Добавляем тип проекта, если он отсутствует
+        projects.forEach(project => {
+            if (!project.type) {
+                project.type = 'projects';
+            }
+        });
+
+        generationProjects.forEach(project => {
+            if (!project.type) {
+                project.type = 'generation';
+            }
+        });
+
+        realizationProjects.forEach(project => {
+            if (!project.type) {
+                project.type = 'realization';
+            }
+        });
 
         const allProjects = [...projects, ...generationProjects, ...realizationProjects];
 
         res.json(allProjects);
     } catch (error) {
+        console.error('Error reading projects data:', error);
         res.status(500).send('Error reading projects data');
     }
 });
@@ -480,7 +505,7 @@ app.patch('/projects/:id/transfer', authenticateToken, (req, res) => {
         return res.status(400).send('Type is required');
     }
 
-    let projects = readProjects(type);
+    let projects = readProjects(type); // Ensure this function reads the correct type of projects
     let project = projects.find(p => p.id === id);
 
     if (!project) {

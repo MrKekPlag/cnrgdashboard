@@ -131,8 +131,8 @@
     <script>
         document.addEventListener("DOMContentLoaded", async () => {
             await loadStatuses();
-            loadProjects();
-            loadEmployees();
+            await loadProjects();
+            await loadEmployees();
         });
 
         async function loadStatuses() {
@@ -270,26 +270,28 @@
 
         async function loadProjects() {
             try {
-                const response = await fetch('http://91.147.92.132:3000/projects/all', {
+                const response = await fetch('/projects/all', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
                 if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Ошибка при загрузке проектов:', errorText);
                     throw new Error('Ошибка при загрузке проектов');
                 }
                 const allProjects = await response.json();
                 const projectSelect = document.getElementById('project-select');
                 projectSelect.innerHTML = '';
-                allProjects.projects.forEach(project => {
-                    projectSelect.innerHTML += `<option value="${project.id}" data-type="projects">${project.name}</option>`;
+                allProjects.forEach(project => {
+                    if (!project.type) {
+                        console.error('Проект без типа:', project);
+                        project.type = 'projects';
+                    }
+                    const projectType = project.type.replace('Projects', '');
+                    projectSelect.innerHTML += `<option value="${project.id}" data-type="${projectType}">${project.name}</option>`;
                 });
-                allProjects.generationProjects.forEach(project => {
-                    projectSelect.innerHTML += `<option value="${project.id}" data-type="generation">${project.name}</option>`;
-                });
-                allProjects.realizationProjects.forEach(project => {
-                    projectSelect.innerHTML += `<option value="${project.id}" data-type="realization">${project.name}</option>`;
-                });
+                console.log('Loaded projects:', allProjects);
             } catch (error) {
                 console.error('Ошибка при загрузке проектов:', error);
                 alert('Ошибка при загрузке проектов');
@@ -298,7 +300,8 @@
 
         async function loadEmployees() {
             try {
-                const response = await fetch('http://91.147.92.132:3000/auth/users', {
+                console.log('Fetching users...');
+                const response = await fetch('/auth/users', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -306,6 +309,8 @@
                     }
                 });
                 if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Ошибка при получении пользователей:', errorText);
                     throw new Error('Ошибка при получении пользователей');
                 }
                 const users = await response.json();
@@ -314,6 +319,7 @@
                 users.forEach(user => {
                     employeeSelect.innerHTML += `<option value="${user.firstName} ${user.lastName}">${user.firstName} ${user.lastName}</option>`;
                 });
+                console.log('Loaded employees:', users);
             } catch (error) {
                 console.error('Ошибка при получении пользователей:', error);
                 alert('Ошибка при получении пользователей');
@@ -322,10 +328,14 @@
 
         async function transferProject() {
             const projectId = document.getElementById('project-select').value;
-            const projectType = document.getElementById('project-select').selectedOptions[0].getAttribute('data-type');
             const newEmployee = document.getElementById('employee-select').value;
+            const projectSelect = document.getElementById('project-select');
+            const projectType = projectSelect.options[projectSelect.selectedIndex].getAttribute('data-type');
+
+            console.log(`Transfer project ${projectId} to ${newEmployee} of type ${projectType}`);
+
             try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/transfer`, {
+                const response = await fetch(`/projects/${projectId}/transfer`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -336,6 +346,8 @@
                 if (response.ok) {
                     alert('Процесс успешно передан новому сотруднику');
                 } else {
+                    const errorText = await response.text();
+                    console.error('Ошибка при передаче процесса:', errorText);
                     throw new Error('Ошибка при передаче процесса');
                 }
             } catch (error) {
@@ -346,10 +358,14 @@
 
         async function addEmployee() {
             const projectId = document.getElementById('project-select').value;
-            const projectType = document.getElementById('project-select').selectedOptions[0].getAttribute('data-type');
             const newEmployee = document.getElementById('employee-select').value;
+            const projectSelect = document.getElementById('project-select');
+            const projectType = projectSelect.options[projectSelect.selectedIndex].getAttribute('data-type');
+
+            console.log(`Add employee ${newEmployee} to project ${projectId} of type ${projectType}`);
+
             try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/add-employee`, {
+                const response = await fetch(`/projects/${projectId}/add-employee`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -360,6 +376,8 @@
                 if (response.ok) {
                     alert('Сотрудник успешно добавлен к процессу');
                 } else {
+                    const errorText = await response.text();
+                    console.error('Ошибка при добавлении сотрудника:', errorText);
                     throw new Error('Ошибка при добавлении сотрудника');
                 }
             } catch (error) {
@@ -370,10 +388,14 @@
 
         async function removeEmployee() {
             const projectId = document.getElementById('project-select').value;
-            const projectType = document.getElementById('project-select').selectedOptions[0].getAttribute('data-type');
             const employeeToRemove = document.getElementById('employee-select').value;
+            const projectSelect = document.getElementById('project-select');
+            const projectType = projectSelect.options[projectSelect.selectedIndex].getAttribute('data-type');
+
+            console.log(`Remove employee ${employeeToRemove} from project ${projectId} of type ${projectType}`);
+
             try {
-                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/remove-employee`, {
+                const response = await fetch(`/projects/${projectId}/remove-employee`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -384,6 +406,8 @@
                 if (response.ok) {
                     alert('Сотрудник успешно удален из процесса');
                 } else {
+                    const errorText = await response.text();
+                    console.error('Ошибка при удалении сотрудника:', errorText);
                     throw new Error('Ошибка при удалении сотрудника');
                 }
             } catch (error) {

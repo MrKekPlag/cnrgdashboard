@@ -1,13 +1,13 @@
 [
   {
-    "name": "аьлвыа",
+    "name": "jgkdjgkdf",
     "id": "222222222",
     "employees": [
       "Nurdaulet Zhumabekov"
     ],
     "goals": [
       {
-        "name": "10",
+        "name": "fldjdskfjj",
         "deadline": "2024-12-31",
         "status": "Запрос",
         "rating": 0,
@@ -15,42 +15,42 @@
       }
     ],
     "dependencies": [
-      "111111111"
+      "111111111",
+      "333333333"
     ],
-    "startDate": "2024-12-31",
+    "startDate": "2023-12-31",
     "endDate": "2024-12-31",
-    "phase": "адв",
-    "comments": "лдываы",
+    "phase": "kgfdg",
+    "comments": "gdskfjldjs",
     "weight": "10",
     "status": "Запрос",
-    "budget": "1000"
+    "budget": "1000",
+    "type": "generationProjects"
   },
   {
-    "name": "fdsofkds",
-    "id": "555555555",
+    "name": "kfsd;fkld",
+    "id": "444444444",
     "employees": [
       "Nurdaulet Zhumabekov"
     ],
     "goals": [
       {
-        "name": "dkos",
+        "name": "fdsfd",
         "deadline": "2024-12-31",
-        "status": "Запрос",
+        "status": "Выполнено",
         "rating": 0,
         "customerRating": "Нет"
       }
     ],
     "dependencies": [
-      "444444444",
-      "666666666"
+      "555555555"
     ],
     "startDate": "2024-12-31",
     "endDate": "2024-12-31",
-    "phase": "kdfso",
+    "phase": "dls;f",
     "comments": "fdsklf",
     "weight": "10",
     "status": "Запрос",
-    "budget": "10000",
-    "type": "generationProjects"
+    "budget": "1000"
   }
 ]

@@ -1,14 +1,14 @@
 [
   {
-    "name": "fdlsflfd",
+    "name": "fsdkfksd",
     "id": "111111111",
     "employees": [
       "Nurdaulet Zhumabekov"
     ],
     "goals": [
       {
-        "name": "10",
-        "deadline": "2024-11-15",
+        "name": "193jf",
+        "deadline": "2024-12-31",
         "status": "Запрос",
         "rating": 0,
         "customerRating": "Нет"
@@ -16,44 +16,12 @@
     ],
     "dependencies": [
       "222222222",
-      "444444444"
+      "333333333",
+      "555555555"
     ],
     "startDate": "0000-00-00",
     "endDate": "0000-00-00",
-    "comments": "cdosm",
-    "weight": "10",
-    "status": "",
-    "products": [
-      {
-        "name": "10",
-        "cost": "10"
-      }
-    ],
-    "deadline": "2024-12-31",
-    "finalCompletionDate": "2024-08-08",
-    "rating": "4",
-    "customerRating": "9",
-    "type": "projects"
-  },
-  {
-    "name": "dkfsfds",
-    "id": "333333333",
-    "employees": [
-      "Nurdaulet Zhumabekov"
-    ],
-    "goals": [
-      {
-        "name": "sllerk",
-        "deadline": "2024-12-20",
-        "status": "Запрос",
-        "rating": 0,
-        "customerRating": "Нет"
-      }
-    ],
-    "dependencies": [],
-    "startDate": "0000-00-00",
-    "endDate": "0000-00-00",
-    "comments": "sldfk",
+    "comments": "19fdsfj",
     "weight": "10",
     "status": "Запрос",
     "products": [
@@ -63,41 +31,39 @@
       }
     ],
     "deadline": "2024-12-31",
-    "finalCompletionDate": "2024-12-18",
-    "rating": "4"
+    "finalCompletionDate": "2024-12-31",
+    "type": "projects"
   },
   {
-    "name": "алдвыад",
-    "id": "444444444",
+    "name": "ksfkdslf",
+    "id": "666666666",
     "employees": [
       "Nurdaulet Zhumabekov"
     ],
     "goals": [
       {
-        "name": "ffdlsf",
-        "deadline": "2024-12-30",
-        "status": "Запрос",
+        "name": "slad,saf",
+        "deadline": "2024-12-31",
+        "status": "Ожидание Оплаты",
         "rating": 0,
         "customerRating": "Нет"
       }
     ],
     "dependencies": [
-      "111111111",
       "555555555"
     ],
     "startDate": "0000-00-00",
     "endDate": "0000-00-00",
-    "comments": "sdfks",
+    "comments": "alsdd,s",
     "weight": "10",
     "status": "Запрос",
     "products": [
       {
-        "name": "e2e",
+        "name": "10",
         "cost": "10"
       }
     ],
-    "deadline": "2024-12-30",
-    "finalCompletionDate": "2024-12-30",
-    "type": "projects"
+    "deadline": "2024-12-31",
+    "finalCompletionDate": "2024-12-31"
   }
 ]

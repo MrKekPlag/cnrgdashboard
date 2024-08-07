@@ -1,30 +1,59 @@
 [
   {
-    "name": "львлыьавы",
-    "id": "666666666",
+    "name": "kgfnkdbgqhb",
+    "id": "333333333",
     "employees": [
-      "Nurdaulet Zhumabekov"
+      "Nurdaulet Zhumabekov",
+      "Анатолий  Куликов"
     ],
     "goals": [
       {
-        "name": "алыва",
-        "deadline": "2024-12-31",
-        "status": "Ожидание Оплаты",
+        "name": "10fewf",
+        "deadline": "",
+        "status": "Запрос",
         "rating": 0,
         "customerRating": "Нет"
       }
     ],
     "dependencies": [
-      "555555555"
+      "111111111",
+      "222222222"
     ],
     "startDate": "2023-12-31",
     "endDate": "2024-12-31",
-    "phase": "аьлы",
-    "comments": "ьалвыьа",
+    "phase": "kdsfj",
+    "comments": "fdslfk",
     "weight": "10",
     "status": "Запрос",
-    "budget": "10000",
-    "rating": "2",
-    "customerRating": "3"
+    "budget": "1000"
+  },
+  {
+    "name": "klfsdfklds",
+    "id": "555555555",
+    "employees": [
+      "Nurdaulet Zhumabekov"
+    ],
+    "goals": [
+      {
+        "name": "kfdsl",
+        "deadline": "2024-12-31",
+        "status": "Запрос",
+        "rating": 0,
+        "customerRating": "Нет"
+      }
+    ],
+    "dependencies": [
+      "111111111",
+      "444444444",
+      "666666666"
+    ],
+    "startDate": "2024-12-31",
+    "endDate": "2024-12-31",
+    "phase": "sfds",
+    "comments": "fdskf",
+    "weight": "10",
+    "status": "Запрос",
+    "budget": "1000",
+    "type": "realizationProjects"
   }
 ]
