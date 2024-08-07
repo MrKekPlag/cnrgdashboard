@@ -137,7 +137,7 @@
 
         async function loadStatuses() {
             try {
-                const response = await fetch('/statuses.json', {
+                const response = await fetch('/statuses', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -184,7 +184,7 @@
         }
 
         async function saveStatus(statusAction) {
-            let statuses = [
+            let statuses = JSON.parse(localStorage.getItem('statuses')) || [
                 { name: 'Запрос', color: '#007bff' },
                 { name: 'Ожидание согласования договора', color: '#ffc107' },
                 { name: 'Ожидание Оплаты', color: '#17a2b8' },
@@ -215,14 +215,14 @@
                     statuses.splice(index, 1);
                     console.log('Deleted status:', statusSelect);
 
-                    const response = await fetch(`http://localhost:3000/projects`, {
+                    const response = await fetch('http://91.147.92.132:3000/projects/all', {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         }
                     });
-                    const projects = await response.json();
+                    const allProjects = await response.json();
 
-                    projects.forEach(project => {
+                    allProjects.projects.forEach(project => {
                         project.goals.forEach(goal => {
                             if (goal.status === deletedStatusName) {
                                 goal.status = 'Запрос';
@@ -230,18 +230,18 @@
                         });
                     });
 
-                    await fetch('http://localhost:3000/projects', {
+                    await fetch('http://91.147.92.132:3000/projects/update-projects', {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         },
-                        body: JSON.stringify(projects)
+                        body: JSON.stringify(allProjects.projects)
                     });
                 }
             }
 
-            const response = await fetch('http://localhost:3000/statuses', {
+            const response = await fetch('http://91.147.92.132:3000/statuses', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -268,103 +268,128 @@
             document.getElementById('manage-projects-modal').style.display = 'none';
         }
 
-        function loadProjects() {
-            fetch('http://localhost:3000/projects/all', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+        async function loadProjects() {
+            try {
+                const response = await fetch('http://91.147.92.132:3000/projects/all', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Ошибка при загрузке проектов');
                 }
-            })
-            .then(response => response.json())
-            .then(allProjects => {
+                const allProjects = await response.json();
                 const projectSelect = document.getElementById('project-select');
                 projectSelect.innerHTML = '';
-                allProjects.forEach(project => {
-                    projectSelect.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+                allProjects.projects.forEach(project => {
+                    projectSelect.innerHTML += `<option value="${project.id}" data-type="projects">${project.name}</option>`;
                 });
-            })
-            .catch(error => console.error('Ошибка при загрузке проектов:', error));
+                allProjects.generationProjects.forEach(project => {
+                    projectSelect.innerHTML += `<option value="${project.id}" data-type="generation">${project.name}</option>`;
+                });
+                allProjects.realizationProjects.forEach(project => {
+                    projectSelect.innerHTML += `<option value="${project.id}" data-type="realization">${project.name}</option>`;
+                });
+            } catch (error) {
+                console.error('Ошибка при загрузке проектов:', error);
+                alert('Ошибка при загрузке проектов');
+            }
         }
 
-        function loadEmployees() {
-            fetch('http://localhost:3000/auth/users', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+        async function loadEmployees() {
+            try {
+                const response = await fetch('http://91.147.92.132:3000/auth/users', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Ошибка при получении пользователей');
                 }
-            })
-            .then(response => response.json())
-            .then(users => {
+                const users = await response.json();
                 const employeeSelect = document.getElementById('employee-select');
                 employeeSelect.innerHTML = '';
                 users.forEach(user => {
                     employeeSelect.innerHTML += `<option value="${user.firstName} ${user.lastName}">${user.firstName} ${user.lastName}</option>`;
                 });
-            })
-            .catch(error => console.error('Ошибка при получении пользователей:', error));
+            } catch (error) {
+                console.error('Ошибка при получении пользователей:', error);
+                alert('Ошибка при получении пользователей');
+            }
         }
 
-        function transferProject() {
+        async function transferProject() {
             const projectId = document.getElementById('project-select').value;
+            const projectType = document.getElementById('project-select').selectedOptions[0].getAttribute('data-type');
             const newEmployee = document.getElementById('employee-select').value;
-            fetch(`http://localhost:3000/projects/${projectId}/transfer`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ newEmployee })
-            })
-            .then(response => {
+            try {
+                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/transfer`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ newEmployee, type: projectType })
+                });
                 if (response.ok) {
                     alert('Процесс успешно передан новому сотруднику');
                 } else {
                     throw new Error('Ошибка при передаче процесса');
                 }
-            })
-            .catch(error => console.error('Ошибка при передаче процесса:', error));
+            } catch (error) {
+                console.error('Ошибка при передаче процесса:', error);
+                alert('Ошибка при передаче процесса');
+            }
         }
 
-        function addEmployee() {
+        async function addEmployee() {
             const projectId = document.getElementById('project-select').value;
+            const projectType = document.getElementById('project-select').selectedOptions[0].getAttribute('data-type');
             const newEmployee = document.getElementById('employee-select').value;
-            fetch(`http://localhost:3000/projects/${projectId}/add-employee`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ newEmployee })
-            })
-            .then(response => {
+            try {
+                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/add-employee`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ newEmployee, type: projectType })
+                });
                 if (response.ok) {
                     alert('Сотрудник успешно добавлен к процессу');
                 } else {
                     throw new Error('Ошибка при добавлении сотрудника');
                 }
-            })
-            .catch(error => console.error('Ошибка при добавлении сотрудника:', error));
+            } catch (error) {
+                console.error('Ошибка при добавлении сотрудника:', error);
+                alert('Ошибка при добавлении сотрудника');
+            }
         }
 
-        function removeEmployee() {
+        async function removeEmployee() {
             const projectId = document.getElementById('project-select').value;
+            const projectType = document.getElementById('project-select').selectedOptions[0].getAttribute('data-type');
             const employeeToRemove = document.getElementById('employee-select').value;
-            fetch(`http://localhost:3000/projects/${projectId}/remove-employee`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ employeeToRemove })
-            })
-            .then(response => {
+            try {
+                const response = await fetch(`http://91.147.92.132:3000/projects/${projectId}/remove-employee`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ employeeToRemove, type: projectType })
+                });
                 if (response.ok) {
                     alert('Сотрудник успешно удален из процесса');
                 } else {
                     throw new Error('Ошибка при удалении сотрудника');
                 }
-            })
-            .catch(error => console.error('Ошибка при удалении сотрудника:', error));
+            } catch (error) {
+                console.error('Ошибка при удалении сотрудника:', error);
+                alert('Ошибка при удалении сотрудника');
+            }
         }
     </script>
 </body>

@@ -1,20 +1,28 @@
 [
   {
-    "name": "Навы",
-    "id": "111119999",
+    "name": "fdlsflfd",
+    "id": "111111111",
     "employees": [
       "Nurdaulet Zhumabekov"
     ],
     "goals": [
       {
-        "name": "цле2",
-        "deadline": "2024-12-31",
-        "status": "Выполнено"
+        "name": "10",
+        "deadline": "2024-11-15",
+        "status": "Запрос",
+        "rating": 0,
+        "customerRating": "Нет"
       }
     ],
-    "dependencies": [],
-    "comments": "ком",
+    "dependencies": [
+      "222222222",
+      "444444444"
+    ],
+    "startDate": "0000-00-00",
+    "endDate": "0000-00-00",
+    "comments": "cdosm",
     "weight": "10",
+    "status": "",
     "products": [
       {
         "name": "10",
@@ -22,40 +30,74 @@
       }
     ],
     "deadline": "2024-12-31",
-    "finalCompletionDate": "2024-12-31",
-    "customerRating": "4",
-    "rating": "6"
+    "finalCompletionDate": "2024-08-08",
+    "rating": "4",
+    "customerRating": "9",
+    "type": "projects"
   },
   {
-    "name": "e.sdasdaw",
-    "id": "000000012",
+    "name": "dkfsfds",
+    "id": "333333333",
     "employees": [
       "Nurdaulet Zhumabekov"
     ],
     "goals": [
       {
-        "name": "wsad",
-        "deadline": "2024-12-31",
-        "status": "",
+        "name": "sllerk",
+        "deadline": "2024-12-20",
+        "status": "Запрос",
+        "rating": 0,
+        "customerRating": "Нет"
+      }
+    ],
+    "dependencies": [],
+    "startDate": "0000-00-00",
+    "endDate": "0000-00-00",
+    "comments": "sldfk",
+    "weight": "10",
+    "status": "Запрос",
+    "products": [
+      {
+        "name": "10",
+        "cost": "10"
+      }
+    ],
+    "deadline": "2024-12-31",
+    "finalCompletionDate": "2024-12-18",
+    "rating": "4"
+  },
+  {
+    "name": "алдвыад",
+    "id": "444444444",
+    "employees": [
+      "Nurdaulet Zhumabekov"
+    ],
+    "goals": [
+      {
+        "name": "ffdlsf",
+        "deadline": "2024-12-30",
+        "status": "Запрос",
         "rating": 0,
         "customerRating": "Нет"
       }
     ],
     "dependencies": [
-      "590939095"
+      "111111111",
+      "555555555"
     ],
     "startDate": "0000-00-00",
     "endDate": "0000-00-00",
-    "comments": "ascssdk;a",
+    "comments": "sdfks",
     "weight": "10",
+    "status": "Запрос",
     "products": [
       {
-        "name": "edas",
+        "name": "e2e",
         "cost": "10"
       }
     ],
-    "deadline": "2024-12-31",
-    "finalCompletionDate": "2024-12-31",
-    "rating": "0"
+    "deadline": "2024-12-30",
+    "finalCompletionDate": "2024-12-30",
+    "type": "projects"
   }
 ]

@@ -128,7 +128,6 @@ function writeProjects(type, projects) {
     console.log(`Writing projects to ${filePath}`);
     fs.writeFileSync(filePath, JSON.stringify(projects, null, 2));
 }
-
 function createNewProjectTemplate(projectData, type) {
     console.log('Creating project template with data:', projectData);
     const { name, id, employees, goals, dependencies, startDate, endDate, phase, comments, weight, status, products, budget, deadline } = projectData;
@@ -140,9 +139,9 @@ function createNewProjectTemplate(projectData, type) {
         goals: goals.map(goal => ({
             name: goal.name,
             deadline: goal.deadline,
-            status: goal.status || "",
-            rating: goal.rating || 0,
-            customerRating: goal.customerRating || "Нет"
+            status: goal.status || "Запрос",
+            rating: goal.rating || 0, // Значение по умолчанию для оценки руководства
+            customerRating: goal.customerRating !== undefined ? goal.customerRating : "Нет" // Значение по умолчанию для оценки заказчика
         })),
         dependencies,
         startDate: type === 'projects' ? "0000-00-00" : startDate,
@@ -150,7 +149,7 @@ function createNewProjectTemplate(projectData, type) {
         phase,
         comments,
         weight,
-        status,
+        status: status || 'Запрос',
         products,
         budget,
         deadline,
@@ -169,24 +168,45 @@ function createNewProjectTemplate(projectData, type) {
     return baseProject;
 }
 
+function readAllProjects() {
+    const dataDir = path.join(__dirname, 'data');
+    const projectFiles = ['projects.json', 'generationProjects.json', 'realizationProjects.json'];
+    let allProjects = [];
+
+    projectFiles.forEach(file => {
+        const filePath = path.join(dataDir, file);
+        if (fs.existsSync(filePath)) {
+            const data = fs.readFileSync(filePath);
+            const projects = JSON.parse(data);
+            projects.forEach(project => {
+                project.type = file.replace('.json', '');
+            });
+            allProjects = allProjects.concat(projects);
+            console.log(`Reading projects from ${filePath}`);
+        } else {
+            console.log(`File not found: ${filePath}`);
+        }
+    });
+
+    return allProjects;
+}
+
 function updateDependenciesForProject(newProjectId, dependencies) {
     console.log('Updating dependencies for project:', newProjectId, dependencies);
-    dependencies.forEach(depId => {
-        let dependencyType = 'projects';
-        if (depId.startsWith('gen')) {
-            dependencyType = 'generation';
-        } else if (depId.startsWith('real')) {
-            dependencyType = 'realization';
-        }
+    const allProjects = readAllProjects();
 
-        const projects = readProjects(dependencyType);
-        const project = projects.find(p => p.id === depId);
+    dependencies.forEach(depId => {
+        const project = allProjects.find(p => p.id === depId);
         if (project) {
             if (!project.dependencies.includes(newProjectId)) {
                 project.dependencies.push(newProjectId);
+                console.log(`Updated dependencies for project ${depId}:`, project.dependencies);
+                const projectType = project.type.replace('Projects', '');
+                let projects = readProjects(projectType);
+                const index = projects.findIndex(p => p.id === depId);
+                projects[index] = project;
+                writeProjects(projectType, projects);
             }
-            writeProjects(dependencyType, projects);
-            console.log(`Updated dependencies for project ${depId}:`, project.dependencies);
         } else {
             console.error(`Project not found: ${depId}`);
         }
@@ -213,7 +233,7 @@ app.post('/projects', authenticateToken, (req, res, next) => {
     }
     if (missingFields.length > 0) {
         console.error('Missing required fields:', missingFields);
-        return res.status(400).send(`Missing required fields: ${missingFields.join(', ')}`);
+        return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
     }
 
     const projectData = {
@@ -260,6 +280,10 @@ app.post('/projects', authenticateToken, (req, res, next) => {
 app.get('/projects', authenticateToken, (req, res) => {
     try {
         let projects = readProjects('projects');
+        projects = projects.map(project => ({
+            ...project,
+            deadline: project.deadline // добавляем поле deadline
+        }));
         console.log('Returning projects:', projects);
         res.json(projects);
     } catch (error) {
@@ -290,45 +314,32 @@ app.get('/projects/realization', authenticateToken, (req, res) => {
     }
 });
 
-// Добавленный маршрут для получения всех проектов
 app.get('/projects/all', authenticateToken, (req, res) => {
     try {
-        const projects = readProjects('projects');
-        const generationProjects = readProjects('generation');
-        const realizationProjects = readProjects('realization');
-        res.json({ projects, generationProjects, realizationProjects });
+        const projects = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'projects.json')));
+        const generationProjects = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'generationProjects.json')));
+        const realizationProjects = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'realizationProjects.json')));
+
+        const allProjects = [...projects, ...generationProjects, ...realizationProjects];
+
+        res.json(allProjects);
     } catch (error) {
-        console.error('Error loading all projects:', error);
-        res.status(500).send('Internal Server Error');
+        res.status(500).send('Error reading projects data');
     }
 });
 
-// Исправленный маршрут для обновления зависимостей
 app.patch('/projects/update-dependencies', authenticateToken, (req, res) => {
     const { newProjectId, dependencies } = req.body;
 
+    console.log('Received update dependencies request:', req.body);
+
+    if (!newProjectId || !dependencies) {
+        console.error('Missing required fields: newProjectId or dependencies');
+        return res.status(400).send('Missing required fields: newProjectId or dependencies');
+    }
+
     try {
-        dependencies.forEach(depId => {
-            let dependencyType = 'projects';
-            if (depId.startsWith('gen')) {
-                dependencyType = 'generation';
-            } else if (depId.startsWith('real')) {
-                dependencyType = 'realization';
-            }
-
-            const projects = readProjects(dependencyType);
-            const project = projects.find(p => p.id === depId);
-            if (project) {
-                if (!project.dependencies.includes(newProjectId)) {
-                    project.dependencies.push(newProjectId);
-                }
-                writeProjects(dependencyType, projects);
-                console.log(`Updated dependencies for project ${depId}:`, project.dependencies);
-            } else {
-                console.error(`Project not found: ${depId}`);
-            }
-        });
-
+        updateDependenciesForProject(newProjectId, dependencies);
         res.status(200).send('Dependencies updated successfully');
     } catch (error) {
         console.error('Error updating dependencies:', error);
@@ -381,6 +392,18 @@ app.get('/statuses', authenticateToken, (req, res) => {
     }
 });
 
+app.patch('/statuses', authenticateToken, (req, res) => {
+    try {
+        const updatedStatuses = req.body;
+        fs.writeFileSync(path.join(__dirname, 'statuses.json'), JSON.stringify(updatedStatuses, null, 2));
+        statuses = updatedStatuses;
+        res.status(200).send('Statuses updated successfully');
+    } catch (error) {
+        console.error('Error updating statuses:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 app.patch('/projects/:id/rating', authenticateToken, (req, res) => {
     const { id } = req.params;
     const { ratingType, rating, type } = req.body;
@@ -429,6 +452,137 @@ app.patch('/projects/:id/completion-date', authenticateToken, (req, res) => {
     console.log(`Updated project completion date for project ${projectId} to ${date}`);
     res.json(project);
 });
+app.patch('/projects/:id/final-completion-date', authenticateToken, (req, res) => {
+    const projectId = req.params.id;
+    const { date, type } = req.body;
+
+    console.log(`Updating final completion date for project ${projectId} of type ${type} to ${date}`);
+
+    let projects = readProjects(type);
+    const project = projects.find(p => p.id === projectId);
+
+    if (!project) {
+        return res.status(404).send('Project not found');
+    }
+
+    project.finalCompletionDate = date; // Сохранение даты в формате yyyy-mm-dd
+    writeProjects(type, projects);
+
+    console.log(`Updated project final completion date for project ${projectId} to ${date}`);
+    res.json(project);
+});
+
+app.patch('/projects/:id/transfer', authenticateToken, (req, res) => {
+    const { id } = req.params;
+    const { newEmployee, type } = req.body;
+
+    if (!type) {
+        return res.status(400).send('Type is required');
+    }
+
+    let projects = readProjects(type);
+    let project = projects.find(p => p.id === id);
+
+    if (!project) {
+        return res.status(404).send('Project not found');
+    }
+
+    project.employees = [newEmployee];
+
+    writeProjects(type, projects);
+    res.status(200).send('Project transferred successfully');
+});
+
+app.patch('/projects/:id/add-employee', authenticateToken, (req, res) => {
+    const { id } = req.params;
+    const { newEmployee, type } = req.body;
+
+    if (!type) {
+        return res.status(400).send('Type is required');
+    }
+
+    let projects = readProjects(type);
+    let project = projects.find(p => p.id === id);
+
+    if (!project) {
+        return res.status(404).send('Project not found');
+    }
+
+    if (!project.employees.includes(newEmployee)) {
+        project.employees.push(newEmployee);
+    }
+
+    writeProjects(type, projects);
+    res.status(200).send('Employee added successfully');
+});
+
+app.patch('/projects/:id/remove-employee', authenticateToken, (req, res) => {
+    const { id } = req.params;
+    const { employeeToRemove, type } = req.body;
+
+    if (!type) {
+        return res.status(400).send('Type is required');
+    }
+
+    let projects = readProjects(type);
+    let project = projects.find(p => p.id === id);
+
+    if (!project) {
+        return res.status(404).send('Project not found');
+    }
+
+    project.employees = project.employees.filter(employee => employee !== employeeToRemove);
+
+    writeProjects(type, projects);
+    res.status(200).send('Employee removed successfully');
+});
+
+app.delete('/projects/:id', authenticateToken, (req, res) => {
+    const projectId = req.params.id;
+    const { type } = req.query;
+
+    if (!type) {
+        return res.status(400).send('Type is required');
+    }
+
+    let projects = readProjects(type);
+    const projectIndex = projects.findIndex(p => p.id === projectId);
+
+    if (projectIndex === -1) {
+        return res.status(404).send('Project not found');
+    }
+
+    projects.splice(projectIndex, 1);
+    writeProjects(type, projects);
+
+    res.status(200).send('Project deleted successfully');
+});
+app.patch('/projects/:id/goal-deadline', authenticateToken, (req, res) => {
+    const { id } = req.params;
+    const { goalName, deadline, type } = req.body;
+
+    if (!type) {
+        return res.status(400).send('Type is required');
+    }
+
+    let projects = readProjects(type);
+    let project = projects.find(p => p.id === id);
+
+    if (!project) {
+        return res.status(404).send('Project not found');
+    }
+
+    if (project.goals && project.goals.length > 0) {
+        const goal = project.goals.find(g => g.name === goalName);
+        if (goal) {
+            goal.deadline = deadline;
+        }
+    }
+
+    writeProjects(type, projects);
+    res.status(200).send('Goal deadline updated successfully');
+});
+
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

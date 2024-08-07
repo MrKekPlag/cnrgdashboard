@@ -13,7 +13,7 @@
             padding: 20px;
         }
         .form-container {
-            max-width: 800px;
+            max-width: 850px;
             margin: auto;
             background-color: #333;
             padding: 20px;
@@ -65,8 +65,7 @@
             align-items: center;
         }
         .goal-field input.goal {
-            flex: 1;
-            width: 800px;
+            width: 950px;
             padding: 10px;
             border: 1px solid #444;
             border-radius: 4px;
@@ -74,7 +73,7 @@
             color: #fff;
         }
         .goal-field input.goal-deadline {
-            width: 200px;
+            width: 150px;
             padding: 10px;
             border: 1px solid #444;
             border-radius: 4px;
@@ -82,7 +81,7 @@
             color: #fff;
         }
         .product-field input.product-name {
-            width: 500px;
+            width: 950px;
             padding: 10px;
             border: 1px solid #444;
             border-radius: 4px;
@@ -90,7 +89,7 @@
             color: #fff;
         }
         .product-field input.product-cost {
-            width: 500px;
+            width: 150px;
             padding: 10px;
             border: 1px solid #444;
             border-radius: 4px;
@@ -98,7 +97,15 @@
             color: #fff;
         }
         .employee-field select {
-            width: 500px;
+            width: 950px;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .dependency-container input {
+            width: 950px;
             padding: 10px;
             border: 1px solid #444;
             border-radius: 4px;
@@ -106,9 +113,9 @@
             color: #fff;
         }
         .remove-btn, .add-btn {
-            width: 40px;
-            height: 40px;
-            padding: 5px;
+            width: 50px;
+            height: 50px;
+            padding: 10px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -123,6 +130,9 @@
         .add-btn {
             background-color: #007bff;
             color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .add-btn:hover {
             background-color: #0056b3;
@@ -142,7 +152,6 @@
         .dependency-container .add-btn {
             background-color: #007bff;
             color: #fff;
-            width: 40px;
         }
         .dependency-container .add-btn:hover {
             background-color: #0056b3;
@@ -448,7 +457,7 @@
             const employees = Array.from(document.getElementsByClassName('employee')).map(select => select.value);
             const deadline = document.getElementById('deadline').value;
 
-            const project = {
+            const projectData = {
                 id,
                 name,
                 dependencies,
@@ -458,17 +467,8 @@
                 weight,
                 employees,
                 deadline,
-                finalCompletionDate: deadline,
                 type: 'projects'
             };
-
-            // Установить значения по умолчанию для startDate и endDate для типа 'projects'
-            if (project.type === 'projects') {
-                project.startDate = "0000-00-00";
-                project.endDate = "0000-00-00";
-            }
-
-            console.log('Creating project with data:', project);
 
             try {
                 const response = await fetch('http://91.147.92.132:3000/projects', {
@@ -477,49 +477,49 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
-                    body: JSON.stringify(project)
+                    body: JSON.stringify(projectData)
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.text();
-                    throw new Error('Network response was not ok: ' + response.statusText + ' - ' + errorData);
+                    throw new Error('Failed to create project');
                 }
 
                 const createdProject = await response.json();
-                localStorage.setItem('projects', JSON.stringify([...JSON.parse(localStorage.getItem('projects') || '[]'), createdProject]));
-
-                // Обновление зависимостей
-                await updateProjectDependencies(project.id, dependencies);
-
-                alert('Проект успешно создан!');
+                await updateProjectDependencies(createdProject.id, dependencies);
+                alert('Процесс успешно создан');
                 window.location.href = 'projects.html';
             } catch (error) {
-                console.error('Ошибка при создании проекта:', error);
-                alert('Ошибка при создании проекта: ' + error.message);
+                console.error('Ошибка при создании процесса:', error);
+                alert('Ошибка при создании процесса: ' + error.message);
             }
         }
 
         async function updateProjectDependencies(newProjectId, dependencies) {
-            console.log('Updating dependencies for project:', newProjectId, dependencies);
             try {
-                const requestBody = JSON.stringify({ newProjectId, dependencies });
-                console.log('Request body:', requestBody);
-
                 const response = await fetch(`http://91.147.92.132:3000/projects/update-dependencies`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
-                    body: requestBody
+                    body: JSON.stringify({ newProjectId, dependencies })
                 });
 
+                const text = await response.text();
+                console.log('Server response text:', text);
+
                 if (!response.ok) {
-                    const errorData = await response.text();
-                    throw new Error('Network response was not ok: ' + response.statusText + ' - ' + errorData);
+                    throw new Error('Network response was not ok: ' + response.statusText + ' - ' + text);
                 }
 
-                const result = await response.json();
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    console.log('Response is not JSON:', text);
+                    return;
+                }
+
                 console.log('Dependencies updated successfully:', result);
             } catch (error) {
                 console.error('Ошибка при обновлении зависимостей:', error);
@@ -528,78 +528,81 @@
         }
 
         function openDependencyModal() {
-            document.getElementById('dependencyModal').style.display = 'flex';
+            const modal = document.getElementById('dependencyModal');
+            modal.style.display = 'flex';
         }
 
         function closeDependencyModal() {
-            document.getElementById('dependencyModal').style.display = 'none';
+            const modal = document.getElementById('dependencyModal');
+            modal.style.display = 'none';
         }
 
         async function populateDependencyList() {
             try {
-                const token = localStorage.getItem('token');
-
-                // Загрузить все проекты (projects, generation и realization)
                 const response = await fetch('http://91.147.92.132:3000/projects/all', {
+                    method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to load projects');
+                    throw new Error('Network response was not ok ' + response.statusText);
                 }
 
-                const allProjects = await response.json();
-                const { projects, generationProjects, realizationProjects } = allProjects;
+                const data = await response.json();
 
-                const combinedProjects = [...projects, ...generationProjects, ...realizationProjects];
-                const dependencyListContainer = document.getElementById('dependency-list-container');
-                dependencyListContainer.innerHTML = '';
-
-                combinedProjects.forEach(project => {
-                    const div = document.createElement('div');
-                    div.textContent = project.id;
-                    div.onclick = () => {
-                        div.classList.toggle('selected');
-                    };
-                    dependencyListContainer.appendChild(div);
-                });
+                // Проверяем, что данные соответствуют ожидаемому формату
+                if (Array.isArray(data)) {
+                    const container = document.getElementById('dependency-list-container');
+                    container.innerHTML = '';
+                    data.forEach(project => {
+                        const div = document.createElement('div');
+                        div.className = 'dependency-item';
+                        div.textContent = project.id;
+                        div.onclick = () => toggleDependencySelection(div);
+                        container.appendChild(div);
+                    });
+                } else {
+                    console.error('Data is not in expected format:', data);
+                }
             } catch (error) {
                 console.error('Error loading dependencies:', error);
+                alert('Error loading dependencies: ' + error.message);
             }
         }
 
+        function toggleDependencySelection(div) {
+            div.classList.toggle('selected');
+        }
+
         function addSelectedDependencies() {
-            const selectedDependencies = Array.from(document.getElementById('dependency-list-container').querySelectorAll('div.selected')).map(div => div.textContent);
+            const selectedDependencies = Array.from(document.getElementsByClassName('selected')).map(div => div.textContent);
             const dependencyInput = document.getElementById('dependency-list');
-            const currentDependencies = dependencyInput.value ? dependencyInput.value.split(', ') : [];
-            const newDependencies = [...new Set([...currentDependencies, ...selectedDependencies])];
-            dependencyInput.value = newDependencies.join(', ') || 'Нет зависимости';
+            dependencyInput.value = selectedDependencies.join(', ');
         }
 
         function removeSelectedDependencies() {
-            const selectedDependencies = Array.from(document.getElementById('dependency-list-container').querySelectorAll('div.selected')).map(div => div.textContent);
             const dependencyInput = document.getElementById('dependency-list');
-            const currentDependencies = dependencyInput.value ? dependencyInput.value.split(', ') : [];
-            const updatedDependencies = currentDependencies.filter(dep => !selectedDependencies.includes(dep));
-            dependencyInput.value = updatedDependencies.join(', ') || 'Нет зависимости';
-        }
-
-        function confirmDependencies() {
-            closeDependencyModal();
+            dependencyInput.value = '';
         }
 
         function searchDependencies() {
-            const query = document.getElementById('dependency-search').value.toLowerCase();
-            const dependencies = document.getElementById('dependency-list-container').querySelectorAll('div');
-            dependencies.forEach(dep => {
-                if (dep.textContent.toLowerCase().includes(query)) {
-                    dep.style.display = '';
+            const searchValue = document.getElementById('dependency-search').value.toLowerCase();
+            const dependencyItems = document.getElementsByClassName('dependency-item');
+            for (let item of dependencyItems) {
+                if (item.textContent.toLowerCase().includes(searchValue)) {
+                    item.style.display = 'block';
                 } else {
-                    dep.style.display = 'none';
+                    item.style.display = 'none';
                 }
-            });
+            }
+        }
+
+        function confirmDependencies() {
+            addSelectedDependencies();
+            closeDependencyModal();
         }
 
         function cancel() {

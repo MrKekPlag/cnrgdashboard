@@ -1,63 +1,56 @@
 [
   {
-    "id": "234443234",
-    "name": "32432432",
-    "phase": "424",
-    "comments": "23424",
-    "startDate": "2024-07-18",
-    "endDate": "2024-07-20",
-    "weight": "10",
-    "budget": "",
+    "name": "аьлвыа",
+    "id": "222222222",
     "employees": [
       "Nurdaulet Zhumabekov"
     ],
-    "status": "Запрос",
-    "rating": "6",
-    "customerRating": "4",
-    "dependencies": [
-      "234929999"
-    ],
     "goals": [
       {
-        "name": "23423",
-        "deadline": "2024-07-19",
-        "selected": true,
+        "name": "10",
+        "deadline": "2024-12-31",
         "status": "Запрос",
-        "rating": "2",
-        "customerRating": "1"
-      },
-      {
-        "name": "wqeqwrwq",
-        "deadline": "2024-07-11",
-        "selected": false,
-        "status": "Выполнено"
+        "rating": 0,
+        "customerRating": "Нет"
       }
     ],
-    "type": "generation"
+    "dependencies": [
+      "111111111"
+    ],
+    "startDate": "2024-12-31",
+    "endDate": "2024-12-31",
+    "phase": "адв",
+    "comments": "лдываы",
+    "weight": "10",
+    "status": "Запрос",
+    "budget": "1000"
   },
   {
-    "name": "Kkdkkk",
-    "id": "590939095",
+    "name": "fdsofkds",
+    "id": "555555555",
     "employees": [
       "Nurdaulet Zhumabekov"
     ],
     "goals": [
       {
-        "name": "Asfi21",
+        "name": "dkos",
         "deadline": "2024-12-31",
-        "status": "Отклонено",
-        "rating": "2",
-        "customerRating": "1"
+        "status": "Запрос",
+        "rating": 0,
+        "customerRating": "Нет"
       }
     ],
-    "dependencies": [],
+    "dependencies": [
+      "444444444",
+      "666666666"
+    ],
     "startDate": "2024-12-31",
-    "endDate": "2025-01-01",
-    "phase": "C",
-    "comments": "comms",
+    "endDate": "2024-12-31",
+    "phase": "kdfso",
+    "comments": "fdsklf",
     "weight": "10",
-    "budget": "5000",
-    "rating": "6",
-    "customerRating": "3"
+    "status": "Запрос",
+    "budget": "10000",
+    "type": "generationProjects"
   }
 ]

@@ -420,7 +420,7 @@
             const startDate = document.getElementById('start-date').value;
             const endDate = document.getElementById('end-date').value;
 
-            const project = {
+            const projectData = {
                 id,
                 name,
                 phase,
@@ -442,17 +442,16 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
-                    body: JSON.stringify(project)
+                    body: JSON.stringify(projectData)
                 });
 
                 if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
+                    throw new Error('Failed to create project');
                 }
 
                 const createdProject = await response.json();
-                localStorage.setItem('generationProjects', JSON.stringify([...JSON.parse(localStorage.getItem('generationProjects') || '[]'), createdProject]));
-
-                alert('Проект успешно создан!');
+                await updateProjectDependencies(createdProject.id, dependencies);
+                alert('Проект успешно создан');
                 window.location.href = 'projects_generation.html';
             } catch (error) {
                 console.error('Ошибка при создании проекта:', error);
@@ -460,83 +459,115 @@
             }
         }
 
+        async function updateProjectDependencies(newProjectId, dependencies) {
+            try {
+                const response = await fetch(`http://91.147.92.132:3000/projects/update-dependencies`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ newProjectId, dependencies })
+                });
+
+                const text = await response.text();
+                console.log('Server response text:', text);
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText + ' - ' + text);
+                }
+
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    console.log('Response is not JSON:', text);
+                    return;
+                }
+
+                console.log('Dependencies updated successfully:', result);
+            } catch (error) {
+                console.error('Ошибка при обновлении зависимостей:', error);
+                alert('Ошибка при обновлении зависимостей: ' + error.message);
+            }
+        }
+
         function openDependencyModal() {
-            document.getElementById('dependencyModal').style.display = 'flex';
+            const modal = document.getElementById('dependencyModal');
+            modal.style.display = 'flex';
         }
 
         function closeDependencyModal() {
-            document.getElementById('dependencyModal').style.display = 'none';
+            const modal = document.getElementById('dependencyModal');
+            modal.style.display = 'none';
         }
 
         async function populateDependencyList() {
             try {
-                const token = localStorage.getItem('token');
                 const response = await fetch('http://91.147.92.132:3000/projects/all', {
+                    method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to load projects');
+                    throw new Error('Network response was not ok ' + response.statusText);
                 }
 
-                const projects = await response.json();
-                const dependencyListContainer = document.getElementById('dependency-list-container');
-                dependencyListContainer.innerHTML = '';
+                const data = await response.json();
 
-                projects.forEach(project => {
-                    const div = document.createElement('div');
-                    div.textContent = project.id;
-                    div.onclick = () => {
-                        div.classList.toggle('selected');
-                    };
-                    dependencyListContainer.appendChild(div);
-                });
+                // Проверяем, что данные соответствуют ожидаемому формату
+                if (Array.isArray(data)) {
+                    const container = document.getElementById('dependency-list-container');
+                    container.innerHTML = '';
+                    data.forEach(project => {
+                        const div = document.createElement('div');
+                        div.className = 'dependency-item';
+                        div.textContent = project.id;
+                        div.onclick = () => toggleDependencySelection(div);
+                        container.appendChild(div);
+                    });
+                } else {
+                    console.error('Data is not in expected format:', data);
+                }
             } catch (error) {
                 console.error('Error loading dependencies:', error);
+                alert('Error loading dependencies: ' + error.message);
             }
         }
 
+        function toggleDependencySelection(div) {
+            div.classList.toggle('selected');
+        }
+
         function addSelectedDependencies() {
-            const selectedDependencies = Array.from(document.getElementById('dependency-list-container').querySelectorAll('div.selected')).map(div => div.textContent);
+            const selectedDependencies = Array.from(document.getElementsByClassName('selected')).map(div => div.textContent);
             const dependencyInput = document.getElementById('dependency-list');
-            const currentDependencies = dependencyInput.value ? dependencyInput.value.split(', ') : [];
-            const newDependencies = [...new Set([...currentDependencies, ...selectedDependencies])];
-            dependencyInput.value = newDependencies.join(', ') || 'Нет зависимости';
+            dependencyInput.value = selectedDependencies.join(', ');
         }
 
         function removeSelectedDependencies() {
-            const selectedDependencies = Array.from(document.getElementById('dependency-list-container').querySelectorAll('div.selected')).map(div => div.textContent);
             const dependencyInput = document.getElementById('dependency-list');
-            const currentDependencies = dependencyInput.value ? dependencyInput.value.split(', ') : [];
-            const updatedDependencies = currentDependencies.filter(dep => !selectedDependencies.includes(dep));
-            dependencyInput.value = updatedDependencies.join(', ') || 'Нет зависимости';
+            dependencyInput.value = '';
+        }
+
+        function searchDependencies() {
+            const searchValue = document.getElementById('dependency-search').value.toLowerCase();
+            const dependencyItems = document.getElementsByClassName('dependency-item');
+            for (let item of dependencyItems) {
+                if (item.textContent.toLowerCase().includes(searchValue)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            }
         }
 
         function confirmDependencies() {
             addSelectedDependencies();
             closeDependencyModal();
-        }
-
-        function searchDependencies() {
-            const searchQuery = document.getElementById('dependency-search').value.toLowerCase();
-            const projects = JSON.parse(localStorage.getItem('projects')) || [];
-            const generationProjects = JSON.parse(localStorage.getItem('generationProjects')) || [];
-            const realizationProjects = JSON.parse(localStorage.getItem('realizationProjects')) || [];
-            const allProjects = [...projects, ...generationProjects, ...realizationProjects];
-            const dependencyListContainer = document.getElementById('dependency-list-container');
-            dependencyListContainer.innerHTML = '';
-            allProjects.forEach(project => {
-                if (project.id.toLowerCase().includes(searchQuery)) {
-                    const div = document.createElement('div');
-                    div.textContent = project.id;
-                    div.onclick = () => {
-                        div.classList.toggle('selected');
-                    };
-                    dependencyListContainer.appendChild(div);
-                }
-            });
         }
 
         function cancel() {
